@@ -20,7 +20,7 @@ RUN go build -a -installsuffix cgo -o main .
 # alpine:3.12.1
 FROM alpine@sha256:c0e9560cda118f9ec63ddefb4a173a2b2a0347082d7dff7dc14272e7841a5b5a
 
-LABEL org.opencontainers.image.source https://github.com/oslokommune/gdrive-statistics
+LABEL org.opencontainers.image.source=https://github.com/oslokommune/gdrive-statistics
 
 WORKDIR /app
 
