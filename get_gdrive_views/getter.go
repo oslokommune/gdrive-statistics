@@ -40,7 +40,7 @@ func getViews(activities *admin.Activities) ([]*GdriveViewEvent, error) {
 	docViews := make([]*GdriveViewEvent, 0)
 
 	for _, item := range activities.Items {
-		view, err := getDocView(item)
+		view, err := createDocView(item)
 		if err != nil {
 			return nil, err
 		}
@@ -51,7 +51,7 @@ func getViews(activities *admin.Activities) ([]*GdriveViewEvent, error) {
 	return docViews, nil
 }
 
-func getDocView(activity *admin.Activity) (*GdriveViewEvent, error) {
+func createDocView(activity *admin.Activity) (*GdriveViewEvent, error) {
 	itemTime, err := time.Parse(time.RFC3339Nano, activity.Id.Time)
 	if err != nil {
 		return nil, fmt.Errorf("unable to parse time: %w", err)
