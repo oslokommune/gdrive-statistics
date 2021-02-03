@@ -1,22 +1,22 @@
-package get_gdrive_views
+package get_gdrive_views_test
 
 import (
-	"fmt"
-	"github.com/oslokommune/gdrive-statistics/hasher"
 	"testing"
-	"time"
 )
 
 func TestWhatever(t *testing.T) {
-	t.Run("Test something", func(t *testing.T) {
-		now := time.Now()
+	testCases := []struct {
+		name string
+	}{
+		{
+			name: "Should work",
+		},
+	}
+	for _, tc := range testCases {
+		tc := tc
+		t.Run(tc.name, func(t *testing.T) {
 
-		view := GdriveViewEvent{
-			time:     &now,
-			userHash: hasher.NewHash("HELLO"),
-			docId:    "SOMEDOCID",
-		}
+		})
+	}
 
-		fmt.Println(view)
-	})
 }

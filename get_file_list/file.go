@@ -5,8 +5,8 @@ import (
 )
 
 type DriveFile struct {
-	Name   string
 	Id     string
+	Name   string
 	Parent string
 }
 

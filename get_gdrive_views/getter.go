@@ -11,7 +11,6 @@ import (
 
 // GetGdriveDocViews returns a slice of Google Drive View events
 func GetGdriveDocViews(client *http.Client, gdriveId string) ([]*GdriveViewEvent, error) {
-	//goland:noinspection GoDeprecation
 	srv, err := admin.New(client)
 	if err != nil {
 		return nil, fmt.Errorf("unable to retrieve reports Client %w", err)

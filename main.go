@@ -60,10 +60,13 @@ func showFilesAndFolders(client *http.Client, gdriveId string) error {
 		return fmt.Errorf("could not get gdrive files: %w", err)
 	}
 
-	fmt.Printf("Google Drive files (%d):\n", len(files))
 	for _, view := range files {
 		fmt.Println(view)
 	}
+
+	fmt.Printf("\nFile count: %d\n", len(files)) // 128647 per 1000 files
+
+	//fmt.Printf("Memory usage: %d\n", size.Of(files))
 
 	return nil
 }
@@ -77,10 +80,11 @@ func printViewEvents(client *http.Client, gdriveId string) error {
 		return fmt.Errorf("error when listing drive usage: %w", err)
 	}
 
-	fmt.Printf("Google Drive views (%d):\n", len(views))
 	for _, view := range views {
 		fmt.Println(view)
 	}
+
+	fmt.Printf("View count: %d\n", len(views))
 
 	return nil
 }
