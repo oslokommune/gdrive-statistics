@@ -14,11 +14,11 @@ func GetFiles(client *http.Client, gdriveId string) ([]*DriveFile, error) {
 		log.Fatalf("Unable to retrieve Drive client: %v", err)
 	}
 
-	filesAll := make([]*DriveFile, 0)
+	allFiles := make([]*DriveFile, 0)
 	nextPageToken := ""
 	i := 0
 
-	for ok := true; ok; ok = nextPageToken != "" && i < 4 {
+	for ok := true; ok; ok = nextPageToken != "" && i < 10000 {
 		i++
 
 		if len(nextPageToken) > 0 {
@@ -26,12 +26,11 @@ func GetFiles(client *http.Client, gdriveId string) ([]*DriveFile, error) {
 			fmt.Printf("Fetching page %d: %s\n", i, nextPageToken[len(nextPageToken)-10:])
 		}
 
-		// Remove comments if using shared gdrive
 		fileList, err := srv.Files.List().
-			Corpora("drive").
-			DriveId(gdriveId).
-			IncludeItemsFromAllDrives(true).
-			SupportsAllDrives(true).
+			Corpora("drive").                // Comment if using private drive
+			DriveId(gdriveId).               // Comment if using private drive
+			IncludeItemsFromAllDrives(true). // Comment if using private drive
+			SupportsAllDrives(true).         // Comment if using private drive
 			//IncludeItemsFromAllDrives(false). // Remove this if getting from shared drive
 			PageToken(nextPageToken).
 			Fields("files(id,name,parents),nextPageToken").
@@ -44,18 +43,18 @@ func GetFiles(client *http.Client, gdriveId string) ([]*DriveFile, error) {
 
 		nextPageToken = fileList.NextPageToken
 
-		files, err := getFiles(fileList.Files)
+		files, err := toDriveFile(fileList.Files)
 		if err != nil {
 			return nil, fmt.Errorf("could not get files: %w", err)
 		}
 
-		filesAll = append(filesAll, files...)
+		allFiles = append(allFiles, files...)
 	}
 
-	return filesAll, nil
+	return allFiles, nil
 }
 
-func getFiles(files []*drive.File) ([]*DriveFile, error) {
+func toDriveFile(files []*drive.File) ([]*DriveFile, error) {
 	driveFiles := make([]*DriveFile, 0)
 
 	for _, file := range files {

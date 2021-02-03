@@ -2,6 +2,7 @@ package main
 
 import (
 	"fmt"
+	"github.com/oslokommune/gdrive-statistics/file_saver"
 	"github.com/oslokommune/gdrive-statistics/gdrive_client"
 	"github.com/oslokommune/gdrive-statistics/get_file_list"
 	"github.com/oslokommune/gdrive-statistics/get_gdrive_views"
@@ -19,10 +20,11 @@ func main() {
 
 /*
 	algorithm:
-	1 get folder tree structure, store into nice data structure
-	2 get file views the last X months
-	3 combine 1+2, create data structure according to spec
-	4 print result
+	1 get gdrive file and folder tree
+	2 get folder tree structure, store into nice data structure
+	3 get file views the last X months
+	4 combine 1+2, create data structure according to spec
+	5 print result
 */
 func run() error {
 	gdriveId, ok := os.LookupEnv("GOOGLE_DRIVE_ID")
@@ -37,21 +39,21 @@ func run() error {
 	}
 
 	// 1
-	err = showFilesAndFolders(client, gdriveId)
-	if err != nil {
-		return fmt.Errorf("could not show files and folders: %w", err)
-	}
-
-	// 2
-	//err = printViewEvents(client, gdriveId)
+	//err = getFilesAndFolders(client, gdriveId)
 	//if err != nil {
-	//	return fmt.Errorf("could not show view events: %w", err)
+	//	return fmt.Errorf("could not show files and folders: %w", err)
 	//}
+
+	// 3
+	err = getViewEvents(client, gdriveId)
+	if err != nil {
+		return fmt.Errorf("could not show view events: %w", err)
+	}
 
 	return nil
 }
 
-func showFilesAndFolders(client *http.Client, gdriveId string) error {
+func getFilesAndFolders(client *http.Client, gdriveId string) error {
 	fmt.Println()
 	fmt.Println("Getting files and folders...")
 
@@ -60,18 +62,29 @@ func showFilesAndFolders(client *http.Client, gdriveId string) error {
 		return fmt.Errorf("could not get gdrive files: %w", err)
 	}
 
-	for _, view := range files {
-		fmt.Println(view)
+	for i := 0; i < min(3, len(files)); i++ {
+		fmt.Println(files[i])
 	}
 
-	fmt.Printf("\nFile count: %d\n", len(files)) // 128647 per 1000 files
+	fmt.Printf("\nFile count: %d\n", len(files))
 
-	//fmt.Printf("Memory usage: %d\n", size.Of(files))
+	err = file_saver.Save(filesToString(files), "files.txt")
+	if err != nil {
+		return fmt.Errorf("could not save file: %w", err)
+	}
 
 	return nil
 }
 
-func printViewEvents(client *http.Client, gdriveId string) error {
+func filesToString(files []*get_file_list.DriveFile) string {
+	s := ""
+	for _, file := range files {
+		s += file.String() + "\n"
+	}
+	return s
+}
+
+func getViewEvents(client *http.Client, gdriveId string) error {
 	fmt.Println()
 	fmt.Println("Getting view events...")
 
@@ -80,11 +93,31 @@ func printViewEvents(client *http.Client, gdriveId string) error {
 		return fmt.Errorf("error when listing drive usage: %w", err)
 	}
 
-	for _, view := range views {
-		fmt.Println(view)
+	for i := 0; i < min(3, len(views)); i++ {
+		fmt.Println(views[i])
 	}
 
 	fmt.Printf("View count: %d\n", len(views))
 
+	err = file_saver.Save(viewsToString(views), "views.txt")
+	if err != nil {
+		return fmt.Errorf("could not save file: %w", err)
+	}
+
 	return nil
+}
+
+func viewsToString(views []*get_gdrive_views.GdriveViewEvent) string {
+	s := ""
+	for _, view := range views {
+		s += view.String() + "\n"
+	}
+	return s
+}
+
+func min(a, b int) int {
+	if a < b {
+		return a
+	}
+	return b
 }

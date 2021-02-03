@@ -1,6 +1,6 @@
 module github.com/oslokommune/gdrive-statistics
 
-go 1.15
+go 1.16
 
 require (
 	cloud.google.com/go v0.75.0 // indirect

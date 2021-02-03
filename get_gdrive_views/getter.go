@@ -4,6 +4,7 @@ import (
 	"errors"
 	"fmt"
 	"github.com/oslokommune/gdrive-statistics/hasher"
+	"github.com/oslokommune/gdrive-statistics/memory_usage"
 	admin "google.golang.org/api/admin/reports/v1"
 	"net/http"
 	"time"
@@ -16,23 +17,45 @@ func GetGdriveDocViews(client *http.Client, gdriveId string) ([]*GdriveViewEvent
 		return nil, fmt.Errorf("unable to retrieve reports Client %w", err)
 	}
 
-	activities, err := srv.Activities.
-		List("all", "drive").
-		MaxResults(5).
-		EventName("view").
-		Filters(fmt.Sprintf("shared_drive_id==%s", gdriveId)).
-		// TODO: Ordering og/eller pageToken
-		Do()
-	if err != nil {
-		return nil, fmt.Errorf("could not get activities: %w", err)
+	allViews := make([]*GdriveViewEvent, 0)
+	startTime := time.Now().
+		//AddDate(0, -3, 0).
+		AddDate(0, 0, -1).
+		Format(time.RFC3339)
+
+	nextPageToken := ""
+	i := 0
+
+	for ok := true; ok; ok = nextPageToken != "" && i < 3 {
+		i++
+
+		if len(nextPageToken) > 0 {
+			memory_usage.PrintMemUsage()
+			fmt.Printf("Fetching page %d: %s\n", i, nextPageToken[len(nextPageToken)-10:])
+		}
+
+		activities, err := srv.Activities.
+			List("all", "drive").
+			MaxResults(1000).
+			EventName("view").
+			Filters(fmt.Sprintf("shared_drive_id==%s", gdriveId)).
+			StartTime(startTime).
+			Do()
+		if err != nil {
+			return nil, fmt.Errorf("could not get activities: %w", err)
+		}
+
+		nextPageToken = activities.NextPageToken
+
+		views, err := getViews(activities)
+		if err != nil {
+			return nil, fmt.Errorf("error getting views: %w", err)
+		}
+
+		allViews = append(allViews, views...)
 	}
 
-	views, err := getViews(activities)
-	if err != nil {
-		return nil, fmt.Errorf("error getting views: %w", err)
-	}
-
-	return views, nil
+	return allViews, nil
 }
 
 func getViews(activities *admin.Activities) ([]*GdriveViewEvent, error) {

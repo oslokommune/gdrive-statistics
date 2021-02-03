@@ -40,11 +40,10 @@ func TestGetFiles(t *testing.T) {
 	for _, tc := range testCases {
 		tc := tc
 		t.Run(tc.name, func(t *testing.T) {
-			driveFiles, err := getFiles(tc.input)
+			driveFiles, err := toDriveFile(tc.input)
 			assert.NoError(t, err)
 
 			assert.Equal(t, tc.expected, driveFiles)
 		})
 	}
-
 }
