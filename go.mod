@@ -4,7 +4,6 @@ go 1.15
 
 require (
 	cloud.google.com/go v0.75.0 // indirect
-	github.com/DmitriyVTitov/size v1.1.0
 	github.com/stretchr/testify v1.5.1
 	golang.org/x/net v0.0.0-20210119194325-5f4716e94777 // indirect
 	golang.org/x/oauth2 v0.0.0-20210126194326-f9ce19ea3013
