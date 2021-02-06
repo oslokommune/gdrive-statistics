@@ -12,7 +12,7 @@ import (
 	"github.com/oslokommune/gdrive-statistics/get_gdrive_views"
 )
 
-const Debug = true
+const Debug = false
 
 func main() {
 	err := run()

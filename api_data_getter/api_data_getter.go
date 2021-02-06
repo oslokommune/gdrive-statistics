@@ -2,6 +2,7 @@ package api_data_getter
 
 import (
 	"fmt"
+	"time"
 
 	"github.com/oslokommune/gdrive-statistics/file_storage"
 	"github.com/oslokommune/gdrive-statistics/get_file_list"
@@ -31,17 +32,17 @@ func New(
 
 func (g *ApiDataGetter) Run() error {
 	// 1
-	err := g.getFilesAndFolders()
-	if err != nil {
-		return fmt.Errorf("could not show files and folders: %w", err)
-	}
+	//err := g.getFilesAndFolders()
+	//if err != nil {
+	//	return fmt.Errorf("could not show files and folders: %w", err)
+	//}
 
 	fmt.Println()
 
 	// 3
-	err = g.getViewEvents()
-	if err != nil {
-		return fmt.Errorf("could not show view events: %w", err)
+	err2 := g.getViewEvents()
+	if err2 != nil {
+		return fmt.Errorf("could not show view events: %w", err2)
 	}
 
 	return nil
@@ -85,16 +86,15 @@ func (g *ApiDataGetter) filesToString(files []*get_file_list.DriveFile) string {
 }
 
 func (g *ApiDataGetter) getViewEvents() error {
-	var pageCount int
+	var startTime time.Time
 	if g.debug {
-		pageCount = 1
+		startTime = time.Now().AddDate(0, 0, -1)
 	} else {
-		pageCount = 1000000
+		startTime = time.Now().AddDate(0, -1, 0)
 	}
 
-	fmt.Printf("Getting view events (pageCount=%d)...\n", pageCount)
-
-	views, err := g.gDriveViewsGetter.GetGdriveDocViews(pageCount)
+	fmt.Printf("Getting view events (startTime=%s)...\n", startTime.Format(time.RFC3339))
+	views, err := g.gDriveViewsGetter.GetGdriveDocViews(&startTime)
 
 	if err != nil {
 		return fmt.Errorf("error when listing drive usage: %w", err)

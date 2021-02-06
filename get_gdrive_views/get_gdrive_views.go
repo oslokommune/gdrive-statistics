@@ -24,7 +24,7 @@ func New(client *http.Client, gDriveId string) *GDriveViewsGetter {
 }
 
 // GetGdriveDocViews fetches View events from the Google Reports API
-func (v *GDriveViewsGetter) GetGdriveDocViews(pageCount int) ([]*GdriveViewEvent, error) {
+func (v *GDriveViewsGetter) GetGdriveDocViews(startTime *time.Time) ([]*GdriveViewEvent, error) {
 	//goland:noinspection ALL
 	srv, err := admin.New(v.client)
 	if err != nil {
@@ -32,15 +32,12 @@ func (v *GDriveViewsGetter) GetGdriveDocViews(pageCount int) ([]*GdriveViewEvent
 	}
 
 	allViews := make([]*GdriveViewEvent, 0)
-	startTime := time.Now().
-		// AddDate(0, -3, 0).
-		AddDate(0, 0, -1).
-		Format(time.RFC3339)
+	startTImeStr := startTime.Format(time.RFC822)
 
 	nextPageToken := ""
 	i := 0
 
-	for ok := true; ok; ok = nextPageToken != "" && i < pageCount {
+	for ok := true; ok; ok = nextPageToken != "" && i < 1000000 {
 		i++
 
 		if len(nextPageToken) > 0 {
@@ -53,7 +50,7 @@ func (v *GDriveViewsGetter) GetGdriveDocViews(pageCount int) ([]*GdriveViewEvent
 			MaxResults(1000).
 			EventName("view").
 			Filters(fmt.Sprintf("shared_drive_id==%s", v.gDriveId)).
-			StartTime(startTime).
+			StartTime(startTImeStr).
 			Do()
 		if err != nil {
 			return nil, fmt.Errorf("could not get activities: %w", err)
