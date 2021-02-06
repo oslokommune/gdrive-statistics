@@ -2,8 +2,9 @@ package get_gdrive_views
 
 import (
 	"fmt"
-	"github.com/oslokommune/gdrive-statistics/hasher"
 	"time"
+
+	"github.com/oslokommune/gdrive-statistics/hasher"
 )
 
 type GdriveViewEvent struct {

@@ -1,9 +1,10 @@
 package get_file_list
 
 import (
+	"testing"
+
 	"github.com/stretchr/testify/assert"
 	"google.golang.org/api/drive/v3"
-	"testing"
 )
 
 func TestGetFiles(t *testing.T) {
@@ -40,7 +41,8 @@ func TestGetFiles(t *testing.T) {
 	for _, tc := range testCases {
 		tc := tc
 		t.Run(tc.name, func(t *testing.T) {
-			driveFiles, err := toDriveFile(tc.input)
+			g := New(nil, "")
+			driveFiles, err := g.toDriveFile(tc.input)
 			assert.NoError(t, err)
 
 			assert.Equal(t, tc.expected, driveFiles)

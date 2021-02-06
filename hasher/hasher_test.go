@@ -2,8 +2,9 @@ package hasher_test
 
 import (
 	"fmt"
-	"github.com/oslokommune/gdrive-statistics/hasher"
 	"testing"
+
+	"github.com/oslokommune/gdrive-statistics/hasher"
 )
 
 func TestWhatever(t *testing.T) {

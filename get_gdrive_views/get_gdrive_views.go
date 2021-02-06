@@ -3,30 +3,44 @@ package get_gdrive_views
 import (
 	"errors"
 	"fmt"
+	"net/http"
+	"time"
+
 	"github.com/oslokommune/gdrive-statistics/hasher"
 	"github.com/oslokommune/gdrive-statistics/memory_usage"
 	admin "google.golang.org/api/admin/reports/v1"
-	"net/http"
-	"time"
 )
 
-// GetGdriveDocViews returns a slice of Google Drive View events
-func GetGdriveDocViews(client *http.Client, gdriveId string) ([]*GdriveViewEvent, error) {
-	srv, err := admin.New(client)
+type GDriveViewsGetter struct {
+	client   *http.Client
+	gDriveId string
+}
+
+func New(client *http.Client, gDriveId string) *GDriveViewsGetter {
+	return &GDriveViewsGetter{
+		client:   client,
+		gDriveId: gDriveId,
+	}
+}
+
+// GetGdriveDocViews fetches View events from the Google Reports API
+func (v *GDriveViewsGetter) GetGdriveDocViews(pageCount int) ([]*GdriveViewEvent, error) {
+	//goland:noinspection ALL
+	srv, err := admin.New(v.client)
 	if err != nil {
 		return nil, fmt.Errorf("unable to retrieve reports Client %w", err)
 	}
 
 	allViews := make([]*GdriveViewEvent, 0)
 	startTime := time.Now().
-		//AddDate(0, -3, 0).
+		// AddDate(0, -3, 0).
 		AddDate(0, 0, -1).
 		Format(time.RFC3339)
 
 	nextPageToken := ""
 	i := 0
 
-	for ok := true; ok; ok = nextPageToken != "" && i < 3 {
+	for ok := true; ok; ok = nextPageToken != "" && i < pageCount {
 		i++
 
 		if len(nextPageToken) > 0 {
@@ -38,7 +52,7 @@ func GetGdriveDocViews(client *http.Client, gdriveId string) ([]*GdriveViewEvent
 			List("all", "drive").
 			MaxResults(1000).
 			EventName("view").
-			Filters(fmt.Sprintf("shared_drive_id==%s", gdriveId)).
+			Filters(fmt.Sprintf("shared_drive_id==%s", v.gDriveId)).
 			StartTime(startTime).
 			Do()
 		if err != nil {
@@ -47,7 +61,7 @@ func GetGdriveDocViews(client *http.Client, gdriveId string) ([]*GdriveViewEvent
 
 		nextPageToken = activities.NextPageToken
 
-		views, err := getViews(activities)
+		views, err := v.getViews(activities)
 		if err != nil {
 			return nil, fmt.Errorf("error getting views: %w", err)
 		}
@@ -58,11 +72,11 @@ func GetGdriveDocViews(client *http.Client, gdriveId string) ([]*GdriveViewEvent
 	return allViews, nil
 }
 
-func getViews(activities *admin.Activities) ([]*GdriveViewEvent, error) {
+func (v *GDriveViewsGetter) getViews(activities *admin.Activities) ([]*GdriveViewEvent, error) {
 	docViews := make([]*GdriveViewEvent, 0)
 
 	for _, item := range activities.Items {
-		view, err := createDocView(item)
+		view, err := v.createDocView(item)
 		if err != nil {
 			return nil, err
 		}
@@ -73,7 +87,7 @@ func getViews(activities *admin.Activities) ([]*GdriveViewEvent, error) {
 	return docViews, nil
 }
 
-func createDocView(activity *admin.Activity) (*GdriveViewEvent, error) {
+func (v *GDriveViewsGetter) createDocView(activity *admin.Activity) (*GdriveViewEvent, error) {
 	itemTime, err := time.Parse(time.RFC3339Nano, activity.Id.Time)
 	if err != nil {
 		return nil, fmt.Errorf("unable to parse time: %w", err)
@@ -96,7 +110,7 @@ func createDocView(activity *admin.Activity) (*GdriveViewEvent, error) {
 
 	userHash := hasher.NewHash(activity.Actor.Email)
 
-	//fmt.Printf("%d [%s]: %s <- %s \t\t doc_id: %s doc_title: %s \t\t\t shared_drive_id: %s \n", i, itemTime.Format(time.RFC822), mainEvent.Name, item.Actor.Email, docId, docTitle, sharedDriveId)
+	// fmt.Printf("%d [%s]: %s <- %s \t\t doc_id: %s doc_title: %s \t\t\t shared_drive_id: %s \n", i, itemTime.Format(time.RFC822), mainEvent.Name, item.Actor.Email, docId, docTitle, sharedDriveId)
 	view := &GdriveViewEvent{
 		time:     &itemTime,
 		userHash: userHash,

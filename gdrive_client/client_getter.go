@@ -4,20 +4,30 @@ import (
 	"context"
 	"encoding/json"
 	"fmt"
-	"golang.org/x/oauth2"
-	"golang.org/x/oauth2/google"
-	admin "google.golang.org/api/admin/reports/v1"
-	"google.golang.org/api/drive/v3"
 	"io/ioutil"
 	"log"
 	"net/http"
 	"os"
-	userPkg "os/user"
-	"path"
+
+	"github.com/oslokommune/gdrive-statistics/file_storage"
+	"golang.org/x/oauth2"
+	"golang.org/x/oauth2/google"
+	admin "google.golang.org/api/admin/reports/v1"
+	"google.golang.org/api/drive/v3"
 )
 
-func GetClient() (*http.Client, error) {
-	credentialsFilepath, err := getFilepath(".google-credentials.json")
+type ClientGetter struct {
+	storage *file_storage.FileStorage
+}
+
+func New(storage *file_storage.FileStorage) *ClientGetter {
+	return &ClientGetter{
+		storage: storage,
+	}
+}
+
+func (g *ClientGetter) GetClient() (*http.Client, error) {
+	credentialsFilepath, err := g.storage.GetFilepath(".google-credentials.json")
 	if err != nil {
 		return nil, fmt.Errorf("could not get credentials file: %w", err)
 	}
@@ -33,38 +43,29 @@ func GetClient() (*http.Client, error) {
 		return nil, fmt.Errorf("unable to parse client secret file to config: %w", err)
 	}
 
-	client, err := getHttpClient(config)
+	client, err := g.getHttpClient(config)
 	if err != nil {
 		return nil, fmt.Errorf("could not get client: %w", err)
 	}
+
 	return client, nil
 }
 
-func getFilepath(filename string) (string, error) {
-	user, err := userPkg.Current()
-	if err != nil {
-		return "", fmt.Errorf("unable to get user: %w", err)
-	}
-
-	userHomeDir := user.HomeDir
-	return path.Join(userHomeDir, filename), nil
-}
-
 // Retrieve a token, saves the token, then returns the generated client.
-func getHttpClient(config *oauth2.Config) (*http.Client, error) {
+func (g *ClientGetter) getHttpClient(config *oauth2.Config) (*http.Client, error) {
 	// The file token.json stores the user's access and refresh tokens, and is
 	// created automatically when the authorization flow completes for the first
 	// time.
 
-	tokFile, err := getFilepath(".google-token.json")
+	tokFile, err := g.storage.GetFilepath(".google-token.json")
 	if err != nil {
 		return nil, fmt.Errorf("could not get file path: %w", err)
 	}
 
-	tok, err := tokenFromFile(tokFile)
+	tok, err := g.tokenFromFile(tokFile)
 	if err != nil {
-		tok = getTokenFromWeb(config)
-		err = saveToken(tokFile, tok)
+		tok = g.getTokenFromWeb(config)
+		err = g.saveToken(tokFile, tok)
 		if err != nil {
 			return nil, fmt.Errorf("could not save token: %w", err)
 		}
@@ -74,7 +75,7 @@ func getHttpClient(config *oauth2.Config) (*http.Client, error) {
 }
 
 // Retrieves a token from a local file.
-func tokenFromFile(file string) (*oauth2.Token, error) {
+func (g *ClientGetter) tokenFromFile(file string) (*oauth2.Token, error) {
 	f, err := os.Open(file)
 	if err != nil {
 		return nil, err
@@ -87,7 +88,7 @@ func tokenFromFile(file string) (*oauth2.Token, error) {
 }
 
 // Request a token from the web, then returns the retrieved token.
-func getTokenFromWeb(config *oauth2.Config) *oauth2.Token {
+func (g *ClientGetter) getTokenFromWeb(config *oauth2.Config) *oauth2.Token {
 	authURL := config.AuthCodeURL("state-token", oauth2.AccessTypeOffline)
 	fmt.Printf("Go to the following link in your browser then type the "+
 		"authorization code: \n%v\n", authURL)
@@ -105,10 +106,10 @@ func getTokenFromWeb(config *oauth2.Config) *oauth2.Token {
 }
 
 // Saves a token to a file path.
-func saveToken(path string, token *oauth2.Token) error {
+func (g *ClientGetter) saveToken(path string, token *oauth2.Token) error {
 	fmt.Printf("Saving credential file to: %s\n", path)
 
-	f, err := os.OpenFile(path, os.O_RDWR|os.O_CREATE|os.O_TRUNC, 0600)
+	f, err := os.OpenFile(path, os.O_RDWR|os.O_CREATE|os.O_TRUNC, 0o600)
 	if err != nil {
 		return fmt.Errorf("unable to cache oauth token: %w", err)
 	}
