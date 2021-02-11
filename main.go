@@ -12,7 +12,7 @@ import (
 	"github.com/oslokommune/gdrive-statistics/get_gdrive_views"
 )
 
-const Debug = false
+const Debug = true
 
 func main() {
 	err := run()
@@ -50,10 +50,10 @@ func run() error {
 		return fmt.Errorf("could not get client: %w", err)
 	}
 
-	fileListGetter := get_file_list.New(client, gDriveId)
-	gDriveViewsGetter := get_gdrive_views.New(client, gDriveId)
+	fileListGetter := get_file_list.New(client, gDriveId, storage)
+	gDriveViewsGetter := get_gdrive_views.New(client, gDriveId, storage)
 
-	apiDataGetter := api_data_getter.New(storage, Debug, fileListGetter, gDriveViewsGetter)
+	apiDataGetter := api_data_getter.New(Debug, fileListGetter, gDriveViewsGetter)
 
 	err = apiDataGetter.Run()
 	if err != nil {

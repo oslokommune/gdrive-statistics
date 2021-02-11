@@ -3,6 +3,7 @@ package get_gdrive_views
 import (
 	"errors"
 	"fmt"
+	"github.com/oslokommune/gdrive-statistics/file_storage"
 	"net/http"
 	"time"
 
@@ -14,9 +15,10 @@ import (
 type GDriveViewsGetter struct {
 	client   *http.Client
 	gDriveId string
+	storage  *file_storage.FileStorage
 }
 
-func New(client *http.Client, gDriveId string) *GDriveViewsGetter {
+func New(client *http.Client, gDriveId string, storage *file_storage.FileStorage) *GDriveViewsGetter {
 	return &GDriveViewsGetter{
 		client:   client,
 		gDriveId: gDriveId,
@@ -32,7 +34,7 @@ func (v *GDriveViewsGetter) GetGdriveDocViews(startTime *time.Time) ([]*GdriveVi
 	}
 
 	allViews := make([]*GdriveViewEvent, 0)
-	startTImeStr := startTime.Format(time.RFC822)
+	startTimeStr := startTime.Format(time.RFC3339)
 
 	nextPageToken := ""
 	i := 0
@@ -50,7 +52,7 @@ func (v *GDriveViewsGetter) GetGdriveDocViews(startTime *time.Time) ([]*GdriveVi
 			MaxResults(1000).
 			EventName("view").
 			Filters(fmt.Sprintf("shared_drive_id==%s", v.gDriveId)).
-			StartTime(startTImeStr).
+			StartTime(startTimeStr).
 			Do()
 		if err != nil {
 			return nil, fmt.Errorf("could not get activities: %w", err)
@@ -64,6 +66,11 @@ func (v *GDriveViewsGetter) GetGdriveDocViews(startTime *time.Time) ([]*GdriveVi
 		}
 
 		allViews = append(allViews, views...)
+	}
+
+	err = v.storage.Save("views.txt", v.viewsToString(allViews))
+	if err != nil {
+		return nil, fmt.Errorf("could not save file: %w", err)
 	}
 
 	return allViews, nil
@@ -90,7 +97,7 @@ func (v *GDriveViewsGetter) createDocView(activity *admin.Activity) (*GdriveView
 		return nil, fmt.Errorf("unable to parse time: %w", err)
 	}
 
-	mainEvent, err := getMainEvent(activity)
+	mainEvent, err := v.getMainEvent(activity)
 	if err != nil {
 		return nil, err
 	}
@@ -118,7 +125,7 @@ func (v *GDriveViewsGetter) createDocView(activity *admin.Activity) (*GdriveView
 	return view, nil
 }
 
-func getMainEvent(item *admin.Activity) (eventParameters, error) {
+func (v *GDriveViewsGetter) getMainEvent(item *admin.Activity) (eventParameters, error) {
 	if len(item.Events) == 0 {
 		return eventParameters{}, errors.New(fmt.Sprintf("got 0 events for item with Etag %s", item.Etag))
 	}
@@ -129,4 +136,12 @@ func getMainEvent(item *admin.Activity) (eventParameters, error) {
 
 	mainEvent := newEventParameters(item.Events[0])
 	return mainEvent, nil
+}
+
+func (_ *GDriveViewsGetter) viewsToString(views []*GdriveViewEvent) string {
+	s := ""
+	for _, view := range views {
+		s += view.String() + "\n"
+	}
+	return s
 }

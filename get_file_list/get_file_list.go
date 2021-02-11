@@ -2,6 +2,7 @@ package get_file_list
 
 import (
 	"fmt"
+	"github.com/oslokommune/gdrive-statistics/file_storage"
 	"net/http"
 
 	"github.com/oslokommune/gdrive-statistics/memory_usage"
@@ -11,12 +12,14 @@ import (
 type FileListGetter struct {
 	client   *http.Client
 	gdriveId string
+	storage  *file_storage.FileStorage
 }
 
-func New(client *http.Client, gdriveId string) *FileListGetter {
+func New(client *http.Client, gdriveId string, storage *file_storage.FileStorage) *FileListGetter {
 	return &FileListGetter{
 		client:   client,
 		gdriveId: gdriveId,
+		storage:  storage,
 	}
 }
 
@@ -65,6 +68,11 @@ func (g *FileListGetter) GetFiles(pageCount int) ([]*DriveFile, error) {
 		allFiles = append(allFiles, files...)
 	}
 
+	err = g.storage.Save("files.txt", g.filesToString(allFiles))
+	if err != nil {
+		return nil, fmt.Errorf("could not save file: %w", err)
+	}
+
 	return allFiles, nil
 }
 
@@ -102,4 +110,12 @@ func (g *FileListGetter) createDriveFile(file *drive.File) (*DriveFile, error) {
 	}
 
 	return df, nil
+}
+
+func (g *FileListGetter) filesToString(files []*DriveFile) string {
+	s := ""
+	for _, file := range files {
+		s += file.String() + "\n"
+	}
+	return s
 }

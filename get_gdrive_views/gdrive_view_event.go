@@ -15,9 +15,8 @@ type GdriveViewEvent struct {
 }
 
 func (g GdriveViewEvent) String() string {
-	return fmt.Sprintf("VIEW [%s] [user hash %s] [docId %s] [docTitle %s]",
+	return fmt.Sprintf("VIEW [%s] [docId %s] [docTitle %s]",
 		g.time.Format(time.RFC822),
-		g.userHash,
 		g.docId,
 		g.docTitle,
 	)
