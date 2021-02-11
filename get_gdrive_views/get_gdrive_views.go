@@ -27,6 +27,9 @@ func New(client *http.Client, gDriveId string, storage *file_storage.FileStorage
 }
 
 // GetGdriveDocViews fetches View events from the Google Reports API
+//
+// Algorithm:
+// - Download
 func (v *GDriveViewsGetter) GetGdriveDocViews(startTime *time.Time) ([]*GdriveViewEvent, error) {
 	//goland:noinspection ALL
 	srv, err := admin.New(v.client)
@@ -37,29 +40,35 @@ func (v *GDriveViewsGetter) GetGdriveDocViews(startTime *time.Time) ([]*GdriveVi
 	allViews := make([]*GdriveViewEvent, 0)
 	startTimeStr := startTime.Format(time.RFC3339)
 
-	nextPageToken := ""
+	pageToken := ""
 	i := 0
 
-	for ok := true; ok; ok = nextPageToken != "" && i < 1000000 {
+	for ok := true; ok; ok = pageToken != "" && i < 1000000 {
 		i++
 
-		if len(nextPageToken) > 0 {
+		if len(pageToken) > 0 {
 			memory_usage.PrintMemUsage()
-			fmt.Printf("Fetching page %d: %s\n", i, nextPageToken[len(nextPageToken)-10:])
+			fmt.Printf("Fetching page %d: %s\n", i, pageToken)
 		}
 
-		activities, err := srv.Activities.
+		activitiesListCall := srv.Activities.
 			List("all", "drive").
 			MaxResults(1000).
 			EventName("view").
 			Filters(fmt.Sprintf("shared_drive_id==%s", v.gDriveId)).
-			StartTime(startTimeStr).
-			Do()
+			StartTime(startTimeStr)
+
+		if len(pageToken) > 0 {
+			activitiesListCall.PageToken(pageToken)
+		}
+
+		activities, err := activitiesListCall.Do()
+
 		if err != nil {
 			return nil, fmt.Errorf("could not get activities: %w", err)
 		}
 
-		nextPageToken = activities.NextPageToken
+		pageToken = activities.NextPageToken
 
 		views, err := v.getViews(activities)
 		if err != nil {
