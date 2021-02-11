@@ -32,15 +32,15 @@ func (g *FileListGetter) GetFiles(pageCount int) ([]*DriveFile, error) {
 	}
 
 	allFiles := make([]*DriveFile, 0)
-	nextPageToken := ""
+	pageToken := ""
 	i := 0
 
-	for ok := true; ok; ok = nextPageToken != "" && i < pageCount {
+	for ok := true; ok; ok = pageToken != "" && i < pageCount {
 		i++
 
-		if len(nextPageToken) > 0 {
+		if len(pageToken) > 0 {
 			memory_usage.PrintMemUsage()
-			fmt.Printf("Fetching page %d: %s\n", i, nextPageToken[len(nextPageToken)-10:])
+			fmt.Printf("Fetching page %d: %s\n", i, pageToken)
 		}
 
 		fileList, err := srv.Files.List().
@@ -49,7 +49,7 @@ func (g *FileListGetter) GetFiles(pageCount int) ([]*DriveFile, error) {
 			IncludeItemsFromAllDrives(true). // Comment if using private drive
 			SupportsAllDrives(true).         // Comment if using private drive
 			// IncludeItemsFromAllDrives(false). // Remove this if getting from shared drive
-			PageToken(nextPageToken).
+			PageToken(pageToken).
 			Fields("files(id,name,parents),nextPageToken").
 			PageSize(1000).
 			OrderBy("folder,modifiedTime").
@@ -58,7 +58,7 @@ func (g *FileListGetter) GetFiles(pageCount int) ([]*DriveFile, error) {
 			return nil, fmt.Errorf("could not list gdrive files: %w", err)
 		}
 
-		nextPageToken = fileList.NextPageToken
+		pageToken = fileList.NextPageToken
 
 		files, err := g.toDriveFile(fileList.Files)
 		if err != nil {
