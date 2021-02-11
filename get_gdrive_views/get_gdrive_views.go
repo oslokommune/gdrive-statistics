@@ -22,6 +22,7 @@ func New(client *http.Client, gDriveId string, storage *file_storage.FileStorage
 	return &GDriveViewsGetter{
 		client:   client,
 		gDriveId: gDriveId,
+		storage:  storage,
 	}
 }
 

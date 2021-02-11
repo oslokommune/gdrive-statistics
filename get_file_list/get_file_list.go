@@ -28,7 +28,7 @@ func (g *FileListGetter) GetFiles(pageCount int) ([]*DriveFile, error) {
 	//goland:noinspection ALL
 	srv, err := drive.New(g.client)
 	if err != nil {
-		return nil, fmt.Errorf("Unable to retrieve Drive client: %v", err)
+		return nil, fmt.Errorf("unable to retrieve Drive client: %v", err)
 	}
 
 	allFiles := make([]*DriveFile, 0)

@@ -61,7 +61,7 @@ func (g *ApiDataGetter) getFilesAndFolders() ([]*get_file_list.DriveFile, error)
 		fmt.Println(files[i])
 	}
 
-	fmt.Printf("\nFile count: %d\n", len(files))
+	fmt.Printf("File count: %d\n", len(files))
 
 	return files, nil
 }

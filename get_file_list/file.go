@@ -16,7 +16,7 @@ func (f *DriveFile) String() string {
 		parent = fmt.Sprintf(" [parent %s]", f.Parent)
 	}
 
-	return fmt.Sprintf("DriveFile [id %s] [name %s]%s",
+	return fmt.Sprintf("File [id %s] [name %s]%s",
 		f.Id,
 		f.Name,
 		parent,

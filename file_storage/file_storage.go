@@ -48,7 +48,7 @@ func (s *FileStorage) Save(filename string, content string) error {
 		err = file.Close()
 	}()
 
-	fmt.Printf("Writing to path: %s", filepath)
+	fmt.Printf("Writing to path: %s\n", filepath)
 
 	_, err = file.WriteString(content)
 	if err != nil {
