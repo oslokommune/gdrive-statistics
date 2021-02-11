@@ -70,14 +70,14 @@ func (g *FileListGetter) getFilesFromApi(pageCount int) ([]*FileOrFolder, error)
 			OrderBy("folder,modifiedTime").
 			Do()
 		if err != nil {
-			return nil, fmt.Errorf("could not list gdrive files: %w", err)
+			return nil, fmt.Errorf("list gdrive files: %w", err)
 		}
 
 		pageToken = fileList.NextPageToken
 
 		files, err := g.toDriveFile(fileList.Files)
 		if err != nil {
-			return nil, fmt.Errorf("could not get files: %w", err)
+			return nil, fmt.Errorf("get files: %w", err)
 		}
 
 		allFiles = append(allFiles, files...)

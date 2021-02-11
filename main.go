@@ -43,13 +43,13 @@ func run() error {
 
 	err := storage.CreateStoreFolderIfNotExists()
 	if err != nil {
-		return fmt.Errorf("could not create directory: %w", err)
+		return fmt.Errorf("create directory: %w", err)
 	}
 
 	fmt.Println("Getting client...")
 	client, err := clientGetter.GetClient()
 	if err != nil {
-		return fmt.Errorf("could not get client: %w", err)
+		return fmt.Errorf("get client: %w", err)
 	}
 
 	fileListGetter := get_file_list.New(client, gDriveId, storage)
@@ -59,7 +59,7 @@ func run() error {
 
 	_, _, err = apiDataGetter.Run()
 	if err != nil {
-		return fmt.Errorf("could not get data from Google API(s): %w", err)
+		return fmt.Errorf("get data from Google API(s): %w", err)
 	}
 
 	return nil

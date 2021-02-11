@@ -75,7 +75,7 @@ func (v *GDriveViewsGetter) getViewsFromApi(startTime *time.Time) ([]*GdriveView
 		activities, err := activitiesListCall.Do()
 
 		if err != nil {
-			return nil, fmt.Errorf("could not get activities: %w", err)
+			return nil, fmt.Errorf("get activities: %w", err)
 		}
 
 		pageToken = activities.NextPageToken

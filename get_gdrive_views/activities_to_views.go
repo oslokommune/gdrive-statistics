@@ -36,12 +36,12 @@ func (v *GDriveViewsGetter) createDocView(activity *admin.Activity) (*GdriveView
 
 	docId, err := mainEvent.GetField("doc_id")
 	if err != nil {
-		return nil, fmt.Errorf("could not get field: %w", err)
+		return nil, fmt.Errorf("get field: %w", err)
 	}
 
 	docTitle, err := mainEvent.GetField("doc_title")
 	if err != nil {
-		return nil, fmt.Errorf("could not get field: %w", err)
+		return nil, fmt.Errorf("get field: %w", err)
 	}
 
 	userHash := hasher.NewHash(activity.Actor.Email)

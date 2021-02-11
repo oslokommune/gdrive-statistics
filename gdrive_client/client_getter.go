@@ -29,7 +29,7 @@ func New(storage *file_storage.FileStorage) *ClientGetter {
 func (g *ClientGetter) GetClient() (*http.Client, error) {
 	credentialsFilepath, err := g.storage.GetFilepath(".google-credentials.json")
 	if err != nil {
-		return nil, fmt.Errorf("could not get credentials file: %w", err)
+		return nil, fmt.Errorf("get credentials file: %w", err)
 	}
 
 	b, err := ioutil.ReadFile(credentialsFilepath)
@@ -45,7 +45,7 @@ func (g *ClientGetter) GetClient() (*http.Client, error) {
 
 	client, err := g.getHttpClient(config)
 	if err != nil {
-		return nil, fmt.Errorf("could not get client: %w", err)
+		return nil, fmt.Errorf("get client: %w", err)
 	}
 
 	return client, nil
@@ -59,7 +59,7 @@ func (g *ClientGetter) getHttpClient(config *oauth2.Config) (*http.Client, error
 
 	tokFile, err := g.storage.GetFilepath(".google-token.json")
 	if err != nil {
-		return nil, fmt.Errorf("could not get file path: %w", err)
+		return nil, fmt.Errorf("get file path: %w", err)
 	}
 
 	tok, err := g.tokenFromFile(tokFile)
@@ -67,7 +67,7 @@ func (g *ClientGetter) getHttpClient(config *oauth2.Config) (*http.Client, error
 		tok = g.getTokenFromWeb(config)
 		err = g.saveToken(tokFile, tok)
 		if err != nil {
-			return nil, fmt.Errorf("could not save token: %w", err)
+			return nil, fmt.Errorf("save token: %w", err)
 		}
 	}
 
@@ -119,7 +119,7 @@ func (g *ClientGetter) saveToken(path string, token *oauth2.Token) error {
 
 	err = json.NewEncoder(f).Encode(token)
 	if err != nil {
-		return fmt.Errorf("could not encode token: %w", err)
+		return fmt.Errorf("encode token: %w", err)
 	}
 
 	fmt.Println("Token file saved")

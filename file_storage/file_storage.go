@@ -38,12 +38,12 @@ func (_ *FileStorage) GetFilepath(filename string) (string, error) {
 func (s *FileStorage) Save(filename string, content []byte) error {
 	filepath, err := s.GetFilepath(filename)
 	if err != nil {
-		return fmt.Errorf("could not get file path: %w", err)
+		return fmt.Errorf("get file path: %w", err)
 	}
 
 	file, err := os.OpenFile(filepath, os.O_RDWR|os.O_CREATE|os.O_TRUNC, 0o744)
 	if err != nil {
-		return fmt.Errorf("could not create file: %w", err)
+		return fmt.Errorf("create file: %w", err)
 	}
 
 	defer func() {
@@ -54,7 +54,7 @@ func (s *FileStorage) Save(filename string, content []byte) error {
 
 	_, err = file.Write(content)
 	if err != nil {
-		return fmt.Errorf("could not write to file: %w", err)
+		return fmt.Errorf("write to file: %w", err)
 	}
 
 	return nil

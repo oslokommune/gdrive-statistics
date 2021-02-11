@@ -12,7 +12,7 @@ func (g *FileListGetter) toDriveFile(files []*drive.File) ([]*FileOrFolder, erro
 		if file.Shared == false {
 			driveFile, err := g.createDriveFile(file)
 			if err != nil {
-				return nil, fmt.Errorf("could not create drive file: %w", err)
+				return nil, fmt.Errorf("create drive file: %w", err)
 			}
 
 			driveFiles = append(driveFiles, driveFile)

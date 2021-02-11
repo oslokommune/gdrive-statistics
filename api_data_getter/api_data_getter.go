@@ -60,7 +60,7 @@ func (g *ApiDataGetter) getAndStoreFilesAndFolders() (string, error) {
 	} else {
 		err := g.GetAndStoreFilesAndFolders(filename)
 		if err != nil {
-			return "", fmt.Errorf("could not show files and folders: %w", err)
+			return "", fmt.Errorf("show files and folders: %w", err)
 		}
 	}
 
@@ -79,7 +79,7 @@ func (g *ApiDataGetter) getAndStoreViewEvents() (string, error) {
 	} else {
 		err := g.GetAndStoreViewEvents(filename)
 		if err != nil {
-			return "", fmt.Errorf("could not show view events: %w", err)
+			return "", fmt.Errorf("show view events: %w", err)
 		}
 	}
 
@@ -98,7 +98,7 @@ func (g *ApiDataGetter) GetAndStoreFilesAndFolders(filename string) error {
 	files, err := g.fileListGetter.GetAndStoreFiles(filename, pageCount)
 
 	if err != nil {
-		return fmt.Errorf("could not get gdrive files: %w", err)
+		return fmt.Errorf("get gdrive files: %w", err)
 	}
 
 	for i := 0; i < g.min(3, len(files)); i++ {
