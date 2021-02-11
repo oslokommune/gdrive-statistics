@@ -23,8 +23,8 @@ func New(client *http.Client, gdriveId string, storage *file_storage.FileStorage
 	}
 }
 
-// GetFiles fetches files and folders from the Google Drive API
-func (g *FileListGetter) GetFiles(pageCount int) ([]*DriveFile, error) {
+// GetAndStoreFiles fetches files and folders from the Google Drive API
+func (g *FileListGetter) GetAndStoreFiles(filename string, pageCount int) ([]*DriveFile, error) {
 	//goland:noinspection ALL
 	srv, err := drive.New(g.client)
 	if err != nil {
@@ -68,7 +68,7 @@ func (g *FileListGetter) GetFiles(pageCount int) ([]*DriveFile, error) {
 		allFiles = append(allFiles, files...)
 	}
 
-	err = g.storage.Save("files.txt", g.filesToString(allFiles))
+	err = g.storage.Save(filename, g.filesToString(allFiles))
 	if err != nil {
 		return nil, fmt.Errorf("could not save file: %w", err)
 	}

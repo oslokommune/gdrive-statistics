@@ -1,6 +1,7 @@
 package file_storage
 
 import (
+	"errors"
 	"fmt"
 	"os"
 	userPkg "os/user"
@@ -23,6 +24,7 @@ func (_ *FileStorage) CreateStoreFolderIfNotExists() error {
 	return nil
 }
 
+// GetFilepath returns the application's data joined with the given filename
 func (_ *FileStorage) GetFilepath(filename string) (string, error) {
 	user, err := userPkg.Current()
 	if err != nil {
@@ -56,4 +58,22 @@ func (s *FileStorage) Save(filename string, content string) error {
 	}
 
 	return nil
+}
+
+func (s *FileStorage) AppFileExists(filename string) (bool, error) {
+	filePath, err := s.GetFilepath(filename)
+	if err != nil {
+		return false, fmt.Errorf("get file path: %w", err)
+	}
+
+	_, err = os.Stat(filePath)
+	if err == nil {
+		return true, nil
+	}
+
+	if errors.Is(err, os.ErrNotExist) {
+		return false, nil
+	}
+
+	return false, err
 }

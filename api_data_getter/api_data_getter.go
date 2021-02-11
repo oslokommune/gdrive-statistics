@@ -2,6 +2,7 @@ package api_data_getter
 
 import (
 	"fmt"
+	"github.com/oslokommune/gdrive-statistics/file_storage"
 	"time"
 
 	"github.com/oslokommune/gdrive-statistics/get_file_list"
@@ -12,37 +13,80 @@ type ApiDataGetter struct {
 	debug             bool
 	fileListGetter    *get_file_list.FileListGetter
 	gDriveViewsGetter *get_gdrive_views.GDriveViewsGetter
+	storage           *file_storage.FileStorage
 }
 
 func New(
 	debug bool,
 	fileListGetter *get_file_list.FileListGetter,
 	gDriveViewsGetter *get_gdrive_views.GDriveViewsGetter,
+	storage *file_storage.FileStorage,
 ) *ApiDataGetter {
 	return &ApiDataGetter{
 		debug:             debug,
 		fileListGetter:    fileListGetter,
 		gDriveViewsGetter: gDriveViewsGetter,
+		storage:           storage,
 	}
 }
 
 func (g *ApiDataGetter) Run() error {
-	_, err := g.getFilesAndFolders()
+	gdriveFiledataFilename, err := g.getAndStoreFilesAndFolders()
 	if err != nil {
-		return fmt.Errorf("could not show files and folders: %w", err)
+		return fmt.Errorf("get and store files and folders: %w", err)
 	}
 
-	fmt.Println()
+	fmt.Println(gdriveFiledataFilename)
 
-	_, err2 := g.GetViewEvents()
-	if err2 != nil {
-		return fmt.Errorf("could not show view events: %w", err2)
+	viewsFilename, err := g.getAndStoreViewEvents()
+	if err != nil {
+		return fmt.Errorf("get and store view events: %w", err)
 	}
+
+	fmt.Println(viewsFilename)
 
 	return nil
 }
 
-func (g *ApiDataGetter) getFilesAndFolders() ([]*get_file_list.DriveFile, error) {
+func (g *ApiDataGetter) getAndStoreFilesAndFolders() (string, error) {
+	filename := "files.json"
+	fileExists, err := g.storage.AppFileExists(filename)
+	if err != nil {
+		return "", fmt.Errorf("app file exists: %w", err)
+	}
+
+	if fileExists {
+		fmt.Printf("File %s already exists, skipping API call to fetch GDrive files and folders", filename)
+	} else {
+		err := g.GetAndStoreFilesAndFolders(filename)
+		if err != nil {
+			return "", fmt.Errorf("could not show files and folders: %w", err)
+		}
+	}
+
+	return filename, nil
+}
+
+func (g *ApiDataGetter) getAndStoreViewEvents() (string, error) {
+	filename := "views.json"
+	fileExists, err := g.storage.AppFileExists(filename)
+	if err != nil {
+		return "", fmt.Errorf("app file exists: %w", err)
+	}
+
+	if fileExists {
+		fmt.Printf("File %s already exists, skipping API call to fetch Gdrive views\n", filename)
+	} else {
+		err := g.GetAndStoreViewEvents(filename)
+		if err != nil {
+			return "", fmt.Errorf("could not show view events: %w", err)
+		}
+	}
+
+	return filename, nil
+}
+
+func (g *ApiDataGetter) GetAndStoreFilesAndFolders(filename string) error {
 	var pageCount int
 	if g.debug {
 		pageCount = 1
@@ -51,10 +95,10 @@ func (g *ApiDataGetter) getFilesAndFolders() ([]*get_file_list.DriveFile, error)
 	}
 
 	fmt.Printf("Getting files and folders (pageCount=%d) ...\n", pageCount)
-	files, err := g.fileListGetter.GetFiles(pageCount)
+	files, err := g.fileListGetter.GetAndStoreFiles(filename, pageCount)
 
 	if err != nil {
-		return nil, fmt.Errorf("could not get gdrive files: %w", err)
+		return fmt.Errorf("could not get gdrive files: %w", err)
 	}
 
 	for i := 0; i < g.min(3, len(files)); i++ {
@@ -63,22 +107,22 @@ func (g *ApiDataGetter) getFilesAndFolders() ([]*get_file_list.DriveFile, error)
 
 	fmt.Printf("File count: %d\n", len(files))
 
-	return files, nil
+	return nil
 }
 
-func (g *ApiDataGetter) GetViewEvents() ([]*get_gdrive_views.GdriveViewEvent, error) {
+func (g *ApiDataGetter) GetAndStoreViewEvents(filename string) error {
 	var startTime time.Time
 	if g.debug {
-		startTime = time.Now().AddDate(0, 0, -1)
+		startTime = time.Now().AddDate(0, 0, -2)
 	} else {
-		startTime = time.Now().AddDate(0, -1, 0)
+		startTime = time.Now().AddDate(0, -3, 0)
 	}
 
 	fmt.Printf("Getting view events (startTime=%s)...\n", startTime.Format(time.RFC3339))
-	views, err := g.gDriveViewsGetter.GetGdriveDocViews(&startTime)
+	views, err := g.gDriveViewsGetter.GetGdriveDocViews(filename, &startTime)
 
 	if err != nil {
-		return nil, fmt.Errorf("error when listing drive usage: %w", err)
+		return fmt.Errorf("error when listing drive usage: %w", err)
 	}
 
 	for i := 0; i < g.min(3, len(views)); i++ {
@@ -87,7 +131,7 @@ func (g *ApiDataGetter) GetViewEvents() ([]*get_gdrive_views.GdriveViewEvent, er
 
 	fmt.Printf("View count: %d\n", len(views))
 
-	return views, nil
+	return nil
 }
 
 func (g *ApiDataGetter) min(a, b int) int {

@@ -30,7 +30,7 @@ func New(client *http.Client, gDriveId string, storage *file_storage.FileStorage
 //
 // Algorithm:
 // - Download
-func (v *GDriveViewsGetter) GetGdriveDocViews(startTime *time.Time) ([]*GdriveViewEvent, error) {
+func (v *GDriveViewsGetter) GetGdriveDocViews(filename string, startTime *time.Time) ([]*GdriveViewEvent, error) {
 	//goland:noinspection ALL
 	srv, err := admin.New(v.client)
 	if err != nil {
@@ -78,7 +78,7 @@ func (v *GDriveViewsGetter) GetGdriveDocViews(startTime *time.Time) ([]*GdriveVi
 		allViews = append(allViews, views...)
 	}
 
-	err = v.storage.Save("views.txt", v.viewsToString(allViews))
+	err = v.storage.Save(filename, v.viewsToString(allViews))
 	if err != nil {
 		return nil, fmt.Errorf("could not save file: %w", err)
 	}

@@ -14,6 +14,8 @@ import (
 
 const Debug = true
 
+//const Debug = false
+
 func main() {
 	err := run()
 	if err != nil {
@@ -53,7 +55,7 @@ func run() error {
 	fileListGetter := get_file_list.New(client, gDriveId, storage)
 	gDriveViewsGetter := get_gdrive_views.New(client, gDriveId, storage)
 
-	apiDataGetter := api_data_getter.New(Debug, fileListGetter, gDriveViewsGetter)
+	apiDataGetter := api_data_getter.New(Debug, fileListGetter, gDriveViewsGetter, storage)
 
 	err = apiDataGetter.Run()
 	if err != nil {
