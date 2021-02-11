@@ -4,13 +4,14 @@ import (
 	"fmt"
 )
 
-type DriveFile struct {
+// FileOrFolder is a file or folder
+type FileOrFolder struct {
 	Id     string
 	Name   string
 	Parent string
 }
 
-func (f *DriveFile) String() string {
+func (f *FileOrFolder) String() string {
 	parent := ""
 	if f.HasParent() {
 		parent = fmt.Sprintf(" [parent %s]", f.Parent)
@@ -23,6 +24,6 @@ func (f *DriveFile) String() string {
 	)
 }
 
-func (f *DriveFile) HasParent() bool {
+func (f *FileOrFolder) HasParent() bool {
 	return len(f.Parent) > 0
 }

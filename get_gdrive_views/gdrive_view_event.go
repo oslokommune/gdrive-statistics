@@ -8,16 +8,16 @@ import (
 )
 
 type GdriveViewEvent struct {
-	time     *time.Time
+	Time     *time.Time
 	userHash *hasher.Hash
-	docId    string
+	DocId    string
 	docTitle string
 }
 
 func (g GdriveViewEvent) String() string {
 	return fmt.Sprintf("View [%s] [docId %s] [docTitle %s]",
-		g.time.Format(time.RFC822),
-		g.docId,
+		g.Time.Format(time.RFC822),
+		g.DocId,
 		g.docTitle,
 	)
 }

@@ -30,22 +30,22 @@ func New(
 	}
 }
 
-func (g *ApiDataGetter) Run() error {
+func (g *ApiDataGetter) Run() (string, string, error) {
 	gdriveFiledataFilename, err := g.getAndStoreFilesAndFolders()
 	if err != nil {
-		return fmt.Errorf("get and store files and folders: %w", err)
+		return "", "", fmt.Errorf("get and store files and folders: %w", err)
 	}
 
 	fmt.Println(gdriveFiledataFilename)
 
 	viewsFilename, err := g.getAndStoreViewEvents()
 	if err != nil {
-		return fmt.Errorf("get and store view events: %w", err)
+		return "", "", fmt.Errorf("get and store view events: %w", err)
 	}
 
 	fmt.Println(viewsFilename)
 
-	return nil
+	return gdriveFiledataFilename, viewsFilename, err
 }
 
 func (g *ApiDataGetter) getAndStoreFilesAndFolders() (string, error) {
@@ -56,7 +56,7 @@ func (g *ApiDataGetter) getAndStoreFilesAndFolders() (string, error) {
 	}
 
 	if fileExists {
-		fmt.Printf("File %s already exists, skipping API call to fetch GDrive files and folders", filename)
+		fmt.Printf("File %s already exists, skipping API call to fetch GDrive files and folders\n", filename)
 	} else {
 		err := g.GetAndStoreFilesAndFolders(filename)
 		if err != nil {
@@ -75,7 +75,7 @@ func (g *ApiDataGetter) getAndStoreViewEvents() (string, error) {
 	}
 
 	if fileExists {
-		fmt.Printf("File %s already exists, skipping API call to fetch Gdrive views\n", filename)
+		fmt.Printf("File %s already exists, skipping API call to fetch GDrive views\n", filename)
 	} else {
 		err := g.GetAndStoreViewEvents(filename)
 		if err != nil {

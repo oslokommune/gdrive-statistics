@@ -1,13 +1,12 @@
 package get_gdrive_views
 
 import (
-	"errors"
+	"encoding/json"
 	"fmt"
 	"github.com/oslokommune/gdrive-statistics/file_storage"
 	"net/http"
 	"time"
 
-	"github.com/oslokommune/gdrive-statistics/hasher"
 	"github.com/oslokommune/gdrive-statistics/memory_usage"
 	admin "google.golang.org/api/admin/reports/v1"
 )
@@ -27,10 +26,21 @@ func New(client *http.Client, gDriveId string, storage *file_storage.FileStorage
 }
 
 // GetGdriveDocViews fetches View events from the Google Reports API
-//
-// Algorithm:
-// - Download
 func (v *GDriveViewsGetter) GetGdriveDocViews(filename string, startTime *time.Time) ([]*GdriveViewEvent, error) {
+	views, err := v.getViewsFromApi(startTime)
+	if err != nil {
+		return nil, fmt.Errorf("call gdrive api: %w", err)
+	}
+
+	err = v.saveToFile(filename, views)
+	if err != nil {
+		return nil, fmt.Errorf("save views to file: %w", err)
+	}
+
+	return views, nil
+}
+
+func (v *GDriveViewsGetter) getViewsFromApi(startTime *time.Time) ([]*GdriveViewEvent, error) {
 	//goland:noinspection ALL
 	srv, err := admin.New(v.client)
 	if err != nil {
@@ -70,7 +80,7 @@ func (v *GDriveViewsGetter) GetGdriveDocViews(filename string, startTime *time.T
 
 		pageToken = activities.NextPageToken
 
-		views, err := v.getViews(activities)
+		views, err := v.toViews(activities)
 		if err != nil {
 			return nil, fmt.Errorf("error getting views: %w", err)
 		}
@@ -78,80 +88,19 @@ func (v *GDriveViewsGetter) GetGdriveDocViews(filename string, startTime *time.T
 		allViews = append(allViews, views...)
 	}
 
-	err = v.storage.Save(filename, v.viewsToString(allViews))
-	if err != nil {
-		return nil, fmt.Errorf("could not save file: %w", err)
-	}
-
 	return allViews, nil
 }
 
-func (v *GDriveViewsGetter) getViews(activities *admin.Activities) ([]*GdriveViewEvent, error) {
-	docViews := make([]*GdriveViewEvent, 0)
-
-	for _, item := range activities.Items {
-		view, err := v.createDocView(item)
-		if err != nil {
-			return nil, err
-		}
-
-		docViews = append(docViews, view)
-	}
-
-	return docViews, nil
-}
-
-func (v *GDriveViewsGetter) createDocView(activity *admin.Activity) (*GdriveViewEvent, error) {
-	itemTime, err := time.Parse(time.RFC3339Nano, activity.Id.Time)
+func (v *GDriveViewsGetter) saveToFile(filename string, views []*GdriveViewEvent) error {
+	jsonData, err := json.MarshalIndent(views, "", "  ")
 	if err != nil {
-		return nil, fmt.Errorf("unable to parse time: %w", err)
+		return fmt.Errorf("marshal json: %w", err)
 	}
 
-	mainEvent, err := v.getMainEvent(activity)
+	err = v.storage.Save(filename, jsonData)
 	if err != nil {
-		return nil, err
+		return fmt.Errorf("save file: %w", err)
 	}
 
-	docId, err := mainEvent.GetField("doc_id")
-	if err != nil {
-		return nil, fmt.Errorf("could not get field: %w", err)
-	}
-
-	docTitle, err := mainEvent.GetField("doc_title")
-	if err != nil {
-		return nil, fmt.Errorf("could not get field: %w", err)
-	}
-
-	userHash := hasher.NewHash(activity.Actor.Email)
-
-	// fmt.Printf("%d [%s]: %s <- %s \t\t doc_id: %s doc_title: %s \t\t\t shared_drive_id: %s \n", i, itemTime.Format(time.RFC822), mainEvent.Name, item.Actor.Email, docId, docTitle, sharedDriveId)
-	view := &GdriveViewEvent{
-		time:     &itemTime,
-		userHash: userHash,
-		docId:    docId,
-		docTitle: docTitle,
-	}
-
-	return view, nil
-}
-
-func (v *GDriveViewsGetter) getMainEvent(item *admin.Activity) (eventParameters, error) {
-	if len(item.Events) == 0 {
-		return eventParameters{}, errors.New(fmt.Sprintf("got 0 events for item with Etag %s", item.Etag))
-	}
-
-	if len(item.Events) > 1 {
-		return eventParameters{}, errors.New(fmt.Sprintf("got more than 1 event for item with Etag %s", item.Etag))
-	}
-
-	mainEvent := newEventParameters(item.Events[0])
-	return mainEvent, nil
-}
-
-func (_ *GDriveViewsGetter) viewsToString(views []*GdriveViewEvent) string {
-	s := ""
-	for _, view := range views {
-		s += view.String() + "\n"
-	}
-	return s
+	return nil
 }

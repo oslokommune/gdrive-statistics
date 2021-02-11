@@ -1,6 +1,7 @@
 package get_file_list
 
 import (
+	"encoding/json"
 	"fmt"
 	"github.com/oslokommune/gdrive-statistics/file_storage"
 	"net/http"
@@ -24,14 +25,28 @@ func New(client *http.Client, gdriveId string, storage *file_storage.FileStorage
 }
 
 // GetAndStoreFiles fetches files and folders from the Google Drive API
-func (g *FileListGetter) GetAndStoreFiles(filename string, pageCount int) ([]*DriveFile, error) {
+func (g *FileListGetter) GetAndStoreFiles(filename string, pageCount int) ([]*FileOrFolder, error) {
+	files, err := g.getFilesFromApi(pageCount)
+	if err != nil {
+		return nil, fmt.Errorf("call gdrive api: %w", err)
+	}
+
+	err = g.saveToFile(filename, files)
+	if err != nil {
+		return nil, fmt.Errorf("save file list to file: %w", err)
+	}
+
+	return files, nil
+}
+
+func (g *FileListGetter) getFilesFromApi(pageCount int) ([]*FileOrFolder, error) {
 	//goland:noinspection ALL
 	srv, err := drive.New(g.client)
 	if err != nil {
 		return nil, fmt.Errorf("unable to retrieve Drive client: %v", err)
 	}
 
-	allFiles := make([]*DriveFile, 0)
+	allFiles := make([]*FileOrFolder, 0)
 	pageToken := ""
 	i := 0
 
@@ -68,51 +83,24 @@ func (g *FileListGetter) GetAndStoreFiles(filename string, pageCount int) ([]*Dr
 		allFiles = append(allFiles, files...)
 	}
 
-	err = g.storage.Save(filename, g.filesToString(allFiles))
-	if err != nil {
-		return nil, fmt.Errorf("could not save file: %w", err)
-	}
-
 	return allFiles, nil
 }
 
-func (g *FileListGetter) toDriveFile(files []*drive.File) ([]*DriveFile, error) {
-	driveFiles := make([]*DriveFile, 0)
-
-	for _, file := range files {
-		if file.Shared == false {
-			driveFile, err := g.createDriveFile(file)
-			if err != nil {
-				return nil, fmt.Errorf("could not create drive file: %w", err)
-			}
-
-			driveFiles = append(driveFiles, driveFile)
-		}
+func (g *FileListGetter) saveToFile(filename string, files []*FileOrFolder) error {
+	jsonData, err := json.MarshalIndent(files, "", "  ")
+	if err != nil {
+		return fmt.Errorf("marshal json: %w", err)
 	}
 
-	return driveFiles, nil
+	err = g.storage.Save(filename, jsonData)
+	if err != nil {
+		return fmt.Errorf("save file: %w", err)
+	}
+
+	return nil
 }
 
-func (g *FileListGetter) createDriveFile(file *drive.File) (*DriveFile, error) {
-	if len(file.Parents) > 1 {
-		return nil, fmt.Errorf("multiple parents (%d) not supported", len(file.Parents))
-	}
-
-	parent := ""
-	if len(file.Parents) == 1 {
-		parent = file.Parents[0]
-	}
-
-	df := &DriveFile{
-		Id:     file.Id,
-		Name:   file.Name,
-		Parent: parent,
-	}
-
-	return df, nil
-}
-
-func (g *FileListGetter) filesToString(files []*DriveFile) string {
+func (g *FileListGetter) filesToString(files []*FileOrFolder) string {
 	s := ""
 	for _, file := range files {
 		s += file.String() + "\n"

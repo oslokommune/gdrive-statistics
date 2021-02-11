@@ -57,7 +57,7 @@ func run() error {
 
 	apiDataGetter := api_data_getter.New(Debug, fileListGetter, gDriveViewsGetter, storage)
 
-	err = apiDataGetter.Run()
+	_, _, err = apiDataGetter.Run()
 	if err != nil {
 		return fmt.Errorf("could not get data from Google API(s): %w", err)
 	}

@@ -35,7 +35,7 @@ func (_ *FileStorage) GetFilepath(filename string) (string, error) {
 	return path.Join(userHomeDir, storeFolder, filename), nil
 }
 
-func (s *FileStorage) Save(filename string, content string) error {
+func (s *FileStorage) Save(filename string, content []byte) error {
 	filepath, err := s.GetFilepath(filename)
 	if err != nil {
 		return fmt.Errorf("could not get file path: %w", err)
@@ -52,7 +52,7 @@ func (s *FileStorage) Save(filename string, content string) error {
 
 	fmt.Printf("Writing to path: %s\n", filepath)
 
-	_, err = file.WriteString(content)
+	_, err = file.Write(content)
 	if err != nil {
 		return fmt.Errorf("could not write to file: %w", err)
 	}

@@ -11,7 +11,7 @@ func TestGetFiles(t *testing.T) {
 	testCases := []struct {
 		name     string
 		input    []*drive.File
-		expected []*DriveFile
+		expected []*FileOrFolder
 	}{
 		{
 			name: "Should convert file",
@@ -25,7 +25,7 @@ func TestGetFiles(t *testing.T) {
 					Parents: []string{"parentB"},
 				},
 			},
-			expected: []*DriveFile{
+			expected: []*FileOrFolder{
 				{
 					Id:     "a",
 					Name:   "a.txt",
@@ -41,7 +41,7 @@ func TestGetFiles(t *testing.T) {
 	for _, tc := range testCases {
 		tc := tc
 		t.Run(tc.name, func(t *testing.T) {
-			g := New(nil, "")
+			g := New(nil, "", nil)
 			driveFiles, err := g.toDriveFile(tc.input)
 			assert.NoError(t, err)
 
