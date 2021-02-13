@@ -30,63 +30,36 @@ func New(
 	}
 }
 
-func (g *ApiDataGetter) Run() (string, string, error) {
-	gdriveFiledataFilename, err := g.getAndStoreFilesAndFolders()
+func (g *ApiDataGetter) GetDataFromApi() ([]*get_file_list.FileOrFolder, []*get_gdrive_views.GdriveViewEvent, error) {
+	files, err := g.getAndStoreFilesAndFolders()
 	if err != nil {
-		return "", "", fmt.Errorf("get and store files and folders: %w", err)
+		return nil, nil, fmt.Errorf("get and store files and folders: %w", err)
 	}
 
-	fmt.Println(gdriveFiledataFilename)
-
-	viewsFilename, err := g.getAndStoreViewEvents()
+	views, err := g.getAndStoreViewEvents()
 	if err != nil {
-		return "", "", fmt.Errorf("get and store view events: %w", err)
+		return nil, nil, fmt.Errorf("get and store view events: %w", err)
 	}
 
-	fmt.Println(viewsFilename)
-
-	return gdriveFiledataFilename, viewsFilename, err
+	return files, views, err
 }
 
-func (g *ApiDataGetter) getAndStoreFilesAndFolders() (string, error) {
+func (g *ApiDataGetter) getAndStoreFilesAndFolders() ([]*get_file_list.FileOrFolder, error) {
 	filename := "files.json"
 	fileExists, err := g.storage.AppFileExists(filename)
 	if err != nil {
-		return "", fmt.Errorf("app file exists: %w", err)
+		return nil, fmt.Errorf("app file exists: %w", err)
 	}
 
 	if fileExists {
 		fmt.Printf("File %s already exists, skipping API call to fetch GDrive files and folders\n", filename)
+		return g.fileListGetter.LoadFromFile(filename)
 	} else {
-		err := g.GetAndStoreFilesAndFolders(filename)
-		if err != nil {
-			return "", fmt.Errorf("show files and folders: %w", err)
-		}
+		return g.GetAndStoreFilesAndFolders(filename)
 	}
-
-	return filename, nil
 }
 
-func (g *ApiDataGetter) getAndStoreViewEvents() (string, error) {
-	filename := "views.json"
-	fileExists, err := g.storage.AppFileExists(filename)
-	if err != nil {
-		return "", fmt.Errorf("app file exists: %w", err)
-	}
-
-	if fileExists {
-		fmt.Printf("File %s already exists, skipping API call to fetch GDrive views\n", filename)
-	} else {
-		err := g.GetAndStoreViewEvents(filename)
-		if err != nil {
-			return "", fmt.Errorf("show view events: %w", err)
-		}
-	}
-
-	return filename, nil
-}
-
-func (g *ApiDataGetter) GetAndStoreFilesAndFolders(filename string) error {
+func (g *ApiDataGetter) GetAndStoreFilesAndFolders(filename string) ([]*get_file_list.FileOrFolder, error) {
 	var pageCount int
 	if g.debug {
 		pageCount = 1
@@ -98,19 +71,13 @@ func (g *ApiDataGetter) GetAndStoreFilesAndFolders(filename string) error {
 	files, err := g.fileListGetter.GetAndStoreFiles(filename, pageCount)
 
 	if err != nil {
-		return fmt.Errorf("get gdrive files: %w", err)
+		return nil, fmt.Errorf("get gdrive files: %w", err)
 	}
 
-	for i := 0; i < g.min(3, len(files)); i++ {
-		fmt.Println(files[i])
-	}
-
-	fmt.Printf("File count: %d\n", len(files))
-
-	return nil
+	return files, nil
 }
 
-func (g *ApiDataGetter) GetAndStoreViewEvents(filename string) error {
+func (g *ApiDataGetter) GetAndStoreViewEvents(filename string) ([]*get_gdrive_views.GdriveViewEvent, error) {
 	var startTime time.Time
 	if g.debug {
 		startTime = time.Now().AddDate(0, 0, -2)
@@ -122,21 +89,23 @@ func (g *ApiDataGetter) GetAndStoreViewEvents(filename string) error {
 	views, err := g.gDriveViewsGetter.GetGdriveDocViews(filename, &startTime)
 
 	if err != nil {
-		return fmt.Errorf("error when listing drive usage: %w", err)
+		return nil, fmt.Errorf("error when listing drive usage: %w", err)
 	}
 
-	for i := 0; i < g.min(3, len(views)); i++ {
-		fmt.Println(views[i])
-	}
-
-	fmt.Printf("View count: %d\n", len(views))
-
-	return nil
+	return views, nil
 }
 
-func (g *ApiDataGetter) min(a, b int) int {
-	if a < b {
-		return a
+func (g *ApiDataGetter) getAndStoreViewEvents() ([]*get_gdrive_views.GdriveViewEvent, error) {
+	filename := "views.json"
+	fileExists, err := g.storage.AppFileExists(filename)
+	if err != nil {
+		return nil, fmt.Errorf("app file exists: %w", err)
 	}
-	return b
+
+	if fileExists {
+		fmt.Printf("File %s already exists, skipping API call to fetch GDrive views\n", filename)
+		return g.gDriveViewsGetter.LoadFromFile(filename)
+	} else {
+		return g.GetAndStoreViewEvents(filename)
+	}
 }

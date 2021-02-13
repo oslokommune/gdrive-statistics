@@ -1,7 +1,6 @@
 package get_gdrive_views
 
 import (
-	"encoding/json"
 	"fmt"
 	"github.com/oslokommune/gdrive-statistics/file_storage"
 	"net/http"
@@ -89,18 +88,4 @@ func (v *GDriveViewsGetter) getViewsFromApi(startTime *time.Time) ([]*GdriveView
 	}
 
 	return allViews, nil
-}
-
-func (v *GDriveViewsGetter) saveToFile(filename string, views []*GdriveViewEvent) error {
-	jsonData, err := json.MarshalIndent(views, "", "  ")
-	if err != nil {
-		return fmt.Errorf("marshal json: %w", err)
-	}
-
-	err = v.storage.Save(filename, jsonData)
-	if err != nil {
-		return fmt.Errorf("save file: %w", err)
-	}
-
-	return nil
 }

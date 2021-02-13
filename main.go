@@ -23,15 +23,6 @@ func main() {
 	}
 }
 
-/*
-	algorithm:
-	1 get gdrive file and folder tree
-	2 get folder tree structure, store into nice data structure
-	3 get file views the last X months
-	4 combine 1+2, create data structure according to spec
-	5 print result
-*/
-
 func run() error {
 	gDriveId, ok := os.LookupEnv("GOOGLE_DRIVE_ID")
 	if !ok {
@@ -57,10 +48,48 @@ func run() error {
 
 	apiDataGetter := api_data_getter.New(Debug, fileListGetter, gDriveViewsGetter, storage)
 
-	_, _, err = apiDataGetter.Run()
+	err = getAndProcessApiData(apiDataGetter)
+	if err != nil {
+		return fmt.Errorf("get data from api: %w", err)
+	}
+
+	return nil
+}
+
+/*
+	algorithm:
+	1 get gdrive file and folder tree
+	2 get folder tree structure, store into nice data structure
+	3 get file views the last X months
+	4 combine 1+2, create data structure according to spec
+	5 print result
+*/
+
+func getAndProcessApiData(apiDataGetter *api_data_getter.ApiDataGetter) error {
+	files, views, err := apiDataGetter.GetDataFromApi()
 	if err != nil {
 		return fmt.Errorf("get data from Google API(s): %w", err)
 	}
 
-	return nil
+	itemCountToPrint := 7
+	for i := 0; i < min(itemCountToPrint, len(views)); i++ {
+		fmt.Println(views[i])
+	}
+
+	fmt.Printf("View count: %d\n", len(views))
+
+	for i := 0; i < min(itemCountToPrint, len(files)); i++ {
+		fmt.Println(files[i])
+	}
+
+	fmt.Printf("File count: %d\n", len(files))
+
+	return err
+}
+
+func min(a, b int) int {
+	if a < b {
+		return a
+	}
+	return b
 }

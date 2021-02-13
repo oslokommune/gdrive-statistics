@@ -3,6 +3,7 @@ package file_storage
 import (
 	"errors"
 	"fmt"
+	"io/ioutil"
 	"os"
 	userPkg "os/user"
 	"path"
@@ -41,23 +42,26 @@ func (s *FileStorage) Save(filename string, content []byte) error {
 		return fmt.Errorf("get file path: %w", err)
 	}
 
-	file, err := os.OpenFile(filepath, os.O_RDWR|os.O_CREATE|os.O_TRUNC, 0o744)
-	if err != nil {
-		return fmt.Errorf("create file: %w", err)
-	}
-
-	defer func() {
-		err = file.Close()
-	}()
-
-	fmt.Printf("Writing to path: %s\n", filepath)
-
-	_, err = file.Write(content)
-	if err != nil {
-		return fmt.Errorf("write to file: %w", err)
-	}
-
-	return nil
+	return ioutil.WriteFile(filepath, content, 0o744)
+	//
+	//
+	//file, err := os.OpenFile(filepath, os.O_RDWR|os.O_CREATE|os.O_TRUNC, 0o744)
+	//if err != nil {
+	//	return fmt.Errorf("create file: %w", err)
+	//}
+	//
+	//defer func() {
+	//	err = file.Close()
+	//}()
+	//
+	//fmt.Printf("Writing to path: %s\n", filepath)
+	//
+	//_, err = file.Write(content)
+	//if err != nil {
+	//	return fmt.Errorf("write to file: %w", err)
+	//}
+	//
+	//return nil
 }
 
 func (s *FileStorage) AppFileExists(filename string) (bool, error) {
@@ -76,4 +80,13 @@ func (s *FileStorage) AppFileExists(filename string) (bool, error) {
 	}
 
 	return false, err
+}
+
+func (s *FileStorage) Load(filename string) ([]byte, error) {
+	filePath, err := s.GetFilepath(filename)
+	if err != nil {
+		return nil, fmt.Errorf("get file path: %w", err)
+	}
+
+	return ioutil.ReadFile(filePath)
 }

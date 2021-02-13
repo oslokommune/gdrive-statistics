@@ -1,7 +1,6 @@
 package get_file_list
 
 import (
-	"encoding/json"
 	"fmt"
 	"github.com/oslokommune/gdrive-statistics/file_storage"
 	"net/http"
@@ -84,26 +83,4 @@ func (g *FileListGetter) getFilesFromApi(pageCount int) ([]*FileOrFolder, error)
 	}
 
 	return allFiles, nil
-}
-
-func (g *FileListGetter) saveToFile(filename string, files []*FileOrFolder) error {
-	jsonData, err := json.MarshalIndent(files, "", "  ")
-	if err != nil {
-		return fmt.Errorf("marshal json: %w", err)
-	}
-
-	err = g.storage.Save(filename, jsonData)
-	if err != nil {
-		return fmt.Errorf("save file: %w", err)
-	}
-
-	return nil
-}
-
-func (g *FileListGetter) filesToString(files []*FileOrFolder) string {
-	s := ""
-	for _, file := range files {
-		s += file.String() + "\n"
-	}
-	return s
 }
