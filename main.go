@@ -72,17 +72,18 @@ func getAndProcessApiData(apiDataGetter *api_data_getter.ApiDataGetter) error {
 	}
 
 	itemCountToPrint := 7
-	for i := 0; i < min(itemCountToPrint, len(views)); i++ {
-		fmt.Println(views[i])
-	}
-
-	fmt.Printf("View count: %d\n", len(views))
 
 	for i := 0; i < min(itemCountToPrint, len(files)); i++ {
 		fmt.Println(files[i])
 	}
 
 	fmt.Printf("File count: %d\n", len(files))
+
+	for i := 0; i < min(itemCountToPrint, len(views)); i++ {
+		fmt.Println(views[i])
+	}
+
+	fmt.Printf("View count: %d\n", len(views))
 
 	return err
 }

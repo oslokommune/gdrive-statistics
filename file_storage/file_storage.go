@@ -43,25 +43,6 @@ func (s *FileStorage) Save(filename string, content []byte) error {
 	}
 
 	return ioutil.WriteFile(filepath, content, 0o744)
-	//
-	//
-	//file, err := os.OpenFile(filepath, os.O_RDWR|os.O_CREATE|os.O_TRUNC, 0o744)
-	//if err != nil {
-	//	return fmt.Errorf("create file: %w", err)
-	//}
-	//
-	//defer func() {
-	//	err = file.Close()
-	//}()
-	//
-	//fmt.Printf("Writing to path: %s\n", filepath)
-	//
-	//_, err = file.Write(content)
-	//if err != nil {
-	//	return fmt.Errorf("write to file: %w", err)
-	//}
-	//
-	//return nil
 }
 
 func (s *FileStorage) AppFileExists(filename string) (bool, error) {
