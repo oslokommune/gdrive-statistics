@@ -5,8 +5,8 @@ import (
 	"github.com/oslokommune/gdrive-statistics/file_storage"
 	"time"
 
-	"github.com/oslokommune/gdrive-statistics/get_file_list"
-	"github.com/oslokommune/gdrive-statistics/get_gdrive_views"
+	"github.com/oslokommune/gdrive-statistics/api_data_getter/get_file_list"
+	"github.com/oslokommune/gdrive-statistics/api_data_getter/get_gdrive_views"
 )
 
 type ApiDataGetter struct {

@@ -2,14 +2,15 @@ package main
 
 import (
 	"fmt"
+	"github.com/oslokommune/gdrive-statistics/view_count_calculator"
 	"log"
 	"os"
 
 	"github.com/oslokommune/gdrive-statistics/api_data_getter"
+	"github.com/oslokommune/gdrive-statistics/api_data_getter/gdrive_client"
+	"github.com/oslokommune/gdrive-statistics/api_data_getter/get_file_list"
+	"github.com/oslokommune/gdrive-statistics/api_data_getter/get_gdrive_views"
 	"github.com/oslokommune/gdrive-statistics/file_storage"
-	"github.com/oslokommune/gdrive-statistics/gdrive_client"
-	"github.com/oslokommune/gdrive-statistics/get_file_list"
-	"github.com/oslokommune/gdrive-statistics/get_gdrive_views"
 )
 
 const Debug = true
@@ -48,10 +49,46 @@ func run() error {
 
 	apiDataGetter := api_data_getter.New(Debug, fileListGetter, gDriveViewsGetter, storage)
 
-	err = getAndProcessApiData(apiDataGetter)
+	files, views, err := apiDataGetter.GetDataFromApi()
 	if err != nil {
-		return fmt.Errorf("get data from api: %w", err)
+		return fmt.Errorf("get data from Google API(s): %w", err)
 	}
+
+	printData(files, views)
+
+	fileViewStatistics := view_count_calculator.CalculateViewStatistics(files, views)
+	// for every view
+	//   doc = view.doc
+	//   stats[doc].totalViewCount++
+	//   stats[doc][view.userHash] = 1
+	// func unique(doc): len(doc.viewUserHashes)
+
+	// file id:xy123, views: 83, unique views: 50
+	// file id:abc567, views: 40, unique views: 2
+
+	fileTree := create_file_tree.Create(files)
+	// FileTree (id, name, parent)
+	// parent
+	// file
+	// children
+
+	// count views per folder:
+	// for every view
+	//   folder = get_folder_of(view.docId)
+	//   viewCount[folder]
+
+	// print stuff
+	// iterer gjennom fileTree
+	//   if item is folder: print("$item - $viewStatistics")
+
+	// something something
+
+	/*
+		| Mappe                   | Antall views | Antall unike views |
+		| Administrasjon/         |          500 |                100 |
+		| Administrasjon/Allmøter |          300 |                 50 |
+		| osv                     |          osv |                osv |
+	*/
 
 	return nil
 }
@@ -66,11 +103,11 @@ func run() error {
 */
 
 func getAndProcessApiData(apiDataGetter *api_data_getter.ApiDataGetter) error {
-	files, views, err := apiDataGetter.GetDataFromApi()
-	if err != nil {
-		return fmt.Errorf("get data from Google API(s): %w", err)
-	}
 
+	return err
+}
+
+func printData(files []*get_file_list.FileOrFolder, views []*get_gdrive_views.GdriveViewEvent) {
 	itemCountToPrint := 7
 
 	for i := 0; i < min(itemCountToPrint, len(files)); i++ {
@@ -84,8 +121,6 @@ func getAndProcessApiData(apiDataGetter *api_data_getter.ApiDataGetter) error {
 	}
 
 	fmt.Printf("View count: %d\n", len(views))
-
-	return err
 }
 
 func min(a, b int) int {
