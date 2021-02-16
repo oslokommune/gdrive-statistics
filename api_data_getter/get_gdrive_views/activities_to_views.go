@@ -70,7 +70,7 @@ func (v *GDriveViewsGetter) getMainEvent(item *admin.Activity) (eventParameters,
 	return mainEvent, nil
 }
 
-func (_ *GDriveViewsGetter) viewsToString(views []*GdriveViewEvent) string {
+func (v *GDriveViewsGetter) viewsToString(views []*GdriveViewEvent) string {
 	s := ""
 	for _, view := range views {
 		s += view.String() + "\n"

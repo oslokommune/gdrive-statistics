@@ -12,7 +12,7 @@ type FolderViews struct {
 
 func Print(folderViews []*FolderViews) {
 	for _, v := range folderViews {
-		fmt.Printf("%s")
+		fmt.Printf("%s", v.Name)
 		fmt.Printf("       ")
 		fmt.Printf("%d", v.Views)
 		fmt.Printf("       ")

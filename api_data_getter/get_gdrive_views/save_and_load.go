@@ -19,8 +19,8 @@ func (v *GDriveViewsGetter) saveToFile(filename string, views []*GdriveViewEvent
 	return nil
 }
 
-func (g *GDriveViewsGetter) LoadFromFile(filename string) ([]*GdriveViewEvent, error) {
-	jsonData, err := g.storage.Load(filename)
+func (v *GDriveViewsGetter) LoadFromFile(filename string) ([]*GdriveViewEvent, error) {
+	jsonData, err := v.storage.Load(filename)
 	if err != nil {
 		return nil, fmt.Errorf("load file: %w", err)
 	}
