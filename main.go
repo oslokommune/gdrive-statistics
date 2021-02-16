@@ -2,7 +2,6 @@ package main
 
 import (
 	"fmt"
-	"github.com/oslokommune/gdrive-statistics/view_count_calculator"
 	"log"
 	"os"
 
@@ -56,7 +55,7 @@ func run() error {
 
 	printData(files, views)
 
-	fileViewStatistics := view_count_calculator.CalculateViewStatistics(files, views)
+	//fileViewStatistics := view_count_calculator.CalculateViewStatistics(files, views)
 	// for every view
 	//   doc = view.doc
 	//   stats[doc].totalViewCount++
@@ -66,7 +65,7 @@ func run() error {
 	// file id:xy123, views: 83, unique views: 50
 	// file id:abc567, views: 40, unique views: 2
 
-	fileTree := create_file_tree.Create(files)
+	//fileTree := create_file_tree.Create(files)
 	// FileTree (id, name, parent)
 	// parent
 	// file
@@ -101,11 +100,6 @@ func run() error {
 	4 combine 1+2, create data structure according to spec
 	5 print result
 */
-
-func getAndProcessApiData(apiDataGetter *api_data_getter.ApiDataGetter) error {
-
-	return err
-}
 
 func printData(files []*get_file_list.FileOrFolder, views []*get_gdrive_views.GdriveViewEvent) {
 	itemCountToPrint := 7

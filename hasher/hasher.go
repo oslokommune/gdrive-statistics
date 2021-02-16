@@ -6,7 +6,7 @@ import (
 )
 
 type Hash struct {
-	data []byte
+	Data []byte
 }
 
 func NewHash(data string) *Hash {
@@ -17,9 +17,9 @@ func NewHash(data string) *Hash {
 
 	sha := h.Sum(nil) // "sha" is uint8 type, encoded in base16
 
-	return &Hash{data: sha}
+	return &Hash{Data: sha}
 }
 
 func (h *Hash) String() string {
-	return hex.EncodeToString(h.data)
+	return hex.EncodeToString(h.Data)
 }
