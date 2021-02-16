@@ -1,4 +1,4 @@
-package view_count_calculator
+package convert_file_views_to_stats
 
 import (
 	"github.com/stretchr/testify/assert"

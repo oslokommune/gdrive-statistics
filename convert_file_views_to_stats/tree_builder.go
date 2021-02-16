@@ -1,4 +1,4 @@
-package view_count_calculator
+package convert_file_views_to_stats
 
 func SetChildren(stats map[string]*FileStat) {
 	for _, fs := range stats {

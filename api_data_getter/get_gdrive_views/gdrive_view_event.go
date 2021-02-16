@@ -8,9 +8,9 @@ import (
 )
 
 type GdriveViewEvent struct {
-	Time     *time.Time
-	UserHash *hasher.Hash
 	DocId    string
+	UserHash *hasher.Hash
+	Time     *time.Time
 	docTitle string
 }
 
