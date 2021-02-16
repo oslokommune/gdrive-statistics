@@ -2,6 +2,7 @@ package main
 
 import (
 	"fmt"
+	"github.com/oslokommune/gdrive-statistics/view_count_calculator"
 	"log"
 	"os"
 
@@ -13,8 +14,6 @@ import (
 )
 
 const Debug = true
-
-//const Debug = false
 
 func main() {
 	err := run()
@@ -55,32 +54,8 @@ func run() error {
 
 	printData(files, views)
 
-	//fileViewStatistics := view_count_calculator.CalculateViewStatistics(files, views)
-	// for every view
-	//   doc = view.doc
-	//   stats[doc].totalViewCount++
-	//   stats[doc][view.userHash] = 1
-	// func unique(doc): len(doc.viewUserHashes)
-
-	// file id:xy123, views: 83, unique views: 50
-	// file id:abc567, views: 40, unique views: 2
-
-	//fileTree := create_file_tree.Create(files)
-	// FileTree (id, name, parent)
-	// parent
-	// file
-	// children
-
-	// count views per folder:
-	// for every view
-	//   folder = get_folder_of(view.docId)
-	//   viewCount[folder]
-
-	// print stuff
-	// iterer gjennom fileTree
-	//   if item is folder: print("$item - $viewStatistics")
-
-	// something something
+	fileViewStatistics := view_count_calculator.CalculateViewStatistics(files, views)
+	fmt.Println(fileViewStatistics)
 
 	/*
 		| Mappe                   | Antall views | Antall unike views |
@@ -91,15 +66,6 @@ func run() error {
 
 	return nil
 }
-
-/*
-	algorithm:
-	1 get gdrive file and folder tree
-	2 get folder tree structure, store into nice data structure
-	3 get file views the last X months
-	4 combine 1+2, create data structure according to spec
-	5 print result
-*/
 
 func printData(files []*get_file_list.FileOrFolder, views []*get_gdrive_views.GdriveViewEvent) {
 	itemCountToPrint := 7
