@@ -49,7 +49,7 @@ func (v *GDriveViewsGetter) createDocView(activity *admin.Activity) (*GdriveView
 	// fmt.Printf("%d [%s]: %s <- %s \t\t doc_id: %s doc_title: %s \t\t\t shared_drive_id: %s \n", i, itemTime.Format(time.RFC822), mainEvent.Name, item.Actor.Email, docId, docTitle, sharedDriveId)
 	view := &GdriveViewEvent{
 		Time:     &itemTime,
-		userHash: userHash,
+		UserHash: userHash,
 		DocId:    docId,
 		docTitle: docTitle,
 	}
