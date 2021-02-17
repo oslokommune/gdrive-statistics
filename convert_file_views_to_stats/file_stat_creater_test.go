@@ -2,7 +2,9 @@ package convert_file_views_to_stats_test
 
 import (
 	"github.com/oslokommune/gdrive-statistics/api_data_getter/get_file_list"
+	"github.com/oslokommune/gdrive-statistics/api_data_getter/get_gdrive_views"
 	"github.com/oslokommune/gdrive-statistics/convert_file_views_to_stats"
+	"github.com/oslokommune/gdrive-statistics/hasher"
 	"github.com/stretchr/testify/assert"
 	"testing"
 )
@@ -32,9 +34,22 @@ func TestJoin(t *testing.T) {
 			},
 		}
 
+		viuews := []*get_gdrive_views.GdriveViewEvent{
+			{
+				DocId:    "a",
+				UserHash: hasher.NewHash("someUser"),
+				Time:     nil,
+			},
+			{
+				DocId:    "a",
+				UserHash: hasher.NewHash("someUser"),
+				Time:     nil,
+			},
+		}
+
 		// TODO next time: Put in views
 
-		fileStats := convert_file_views_to_stats.CreateFileStats(files)
+		fileStats := convert_file_views_to_stats.CreateFileStats(files, views)
 
 		// TODO make some smart asserts
 

@@ -2,6 +2,7 @@ package statistics_printer
 
 import (
 	"fmt"
+	"github.com/oslokommune/gdrive-statistics/convert_file_views_to_stats"
 )
 
 type FolderViews struct {
@@ -10,7 +11,12 @@ type FolderViews struct {
 	UniqueViews int
 }
 
-func Print(folderViews []*FolderViews) {
+func Print(fileStats map[string]*convert_file_views_to_stats.FileStat) {
+	folderViews := toFolderViews(fileStats)
+	print(folderViews)
+}
+
+func print(folderViews []*FolderViews) {
 	for _, v := range folderViews {
 		fmt.Printf("%s", v.Name)
 		fmt.Printf("       ")

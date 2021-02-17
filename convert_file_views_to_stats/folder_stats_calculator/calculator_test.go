@@ -1,4 +1,4 @@
-package view_count_calculator
+package folder_stats_calculator
 
 import (
 	"github.com/oslokommune/gdrive-statistics/convert_file_views_to_stats"
