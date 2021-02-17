@@ -1,52 +1,48 @@
 package convert_file_views_to_stats
 
 import (
+	"github.com/oslokommune/gdrive-statistics/api_data_getter/get_file_list"
 	"github.com/stretchr/testify/assert"
 	"testing"
 )
 
 func TestSetChildren(t *testing.T) {
 	t.Run("should set child relationships correctly", func(t *testing.T) {
-		root := &FileStat{
-			Id:        "root",
-			ViewCount: 0,
-			Parent:    nil,
+		root := &get_file_list.FileOrFolder{
+			Id:     "root",
+			Parent: "",
 		}
 
-		a := &FileStat{
-			Id:        "a",
-			ViewCount: 1,
-			Parent:    root,
+		a := &get_file_list.FileOrFolder{
+			Id:     "a",
+			Parent: "root",
 		}
 
-		b := &FileStat{
-			Id:        "b",
-			ViewCount: 2,
-			Parent:    root,
+		b := &get_file_list.FileOrFolder{
+			Id:     "b",
+			Parent: "root",
 		}
 
-		c := &FileStat{
-			Id:        "c",
-			ViewCount: 2,
-			Parent:    a,
+		c := &get_file_list.FileOrFolder{
+			Id:     "c",
+			Parent: "a",
 		}
 
-		fileStats := map[string]*FileStat{
-			"root": root,
-			"a":    a,
-			"b":    b,
-			"c":    c,
-		}
+		files := []*get_file_list.FileOrFolder{root, a, b, c}
 
-		SetChildren(fileStats)
+		fileStats := toFileStats("root", files)
 
-		assert.Contains(t, root.Children, a)
-		assert.Contains(t, root.Children, b)
-		assert.Len(t, root.Children, 2)
+		fsRoot := fileStats["root"]
+		fsA := fileStats["a"]
+		fsB := fileStats["a"]
 
-		assert.Contains(t, a.Children, c)
-		assert.Len(t, a.Children, 1)
+		assert.Contains(t, fsRoot.Children, a)
+		assert.Contains(t, fsRoot.Children, b)
+		assert.Len(t, fsRoot.Children, 2)
 
-		assert.Len(t, b.Children, 0)
+		assert.Contains(t, fsA.Children, c)
+		assert.Len(t, fsA.Children, 1)
+
+		assert.Len(t, fsB.Children, 0)
 	})
 }

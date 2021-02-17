@@ -13,10 +13,14 @@ type FolderViews struct {
 
 func Print(fileStats map[string]*convert_file_views_to_stats.FileStat) {
 	folderViews := toFolderViews(fileStats)
-	print(folderViews)
+	printViews(folderViews)
 }
 
-func print(folderViews []*FolderViews) {
+func toFolderViews(stats map[string]*convert_file_views_to_stats.FileStat) []*FolderViews {
+	return nil
+}
+
+func printViews(folderViews []*FolderViews) {
 	for _, v := range folderViews {
 		fmt.Printf("%s", v.Name)
 		fmt.Printf("       ")

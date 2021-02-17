@@ -3,8 +3,6 @@ package main
 import (
 	"fmt"
 	"github.com/oslokommune/gdrive-statistics/convert_file_views_to_stats"
-	"github.com/oslokommune/gdrive-statistics/convert_file_views_to_stats/folder_stats_calculator"
-	"github.com/oslokommune/gdrive-statistics/convert_file_views_to_stats/view_count_calculator"
 	"github.com/oslokommune/gdrive-statistics/statistics_printer"
 	"log"
 	"os"
@@ -57,7 +55,7 @@ func run() error {
 
 	printData(files, views)
 
-	fileStats := convert_file_views_to_stats.CreateFileStats(files, views)
+	fileStats := convert_file_views_to_stats.CreateFileStats(gDriveId, files, views)
 	fmt.Println(fileStats)
 
 	statistics_printer.Print(fileStats)

@@ -32,24 +32,76 @@ func TestJoin(t *testing.T) {
 				Name:   "b.txt",
 				Parent: "d1",
 			},
+			{
+				Id:     "c",
+				Name:   "c.txt",
+				Parent: "d1",
+			},
 		}
 
-		viuews := []*get_gdrive_views.GdriveViewEvent{
+		views := []*get_gdrive_views.GdriveViewEvent{
 			{
 				DocId:    "a",
-				UserHash: hasher.NewHash("someUser"),
+				UserHash: hasher.NewHash("joe"),
 				Time:     nil,
 			},
 			{
 				DocId:    "a",
-				UserHash: hasher.NewHash("someUser"),
+				UserHash: hasher.NewHash("bob"),
+				Time:     nil,
+			},
+			{
+				DocId:    "a",
+				UserHash: hasher.NewHash("bob"),
+				Time:     nil,
+			},
+			{
+				DocId:    "b",
+				UserHash: hasher.NewHash("joe"),
+				Time:     nil,
+			},
+			{
+				DocId:    "b",
+				UserHash: hasher.NewHash("joe"),
+				Time:     nil,
+			},
+			{
+				DocId:    "b",
+				UserHash: hasher.NewHash("joe"),
+				Time:     nil,
+			},
+			{
+				DocId:    "b",
+				UserHash: hasher.NewHash("bob"),
+				Time:     nil,
+			},
+			{
+				DocId:    "b",
+				UserHash: hasher.NewHash("bob"),
+				Time:     nil,
+			},
+			{
+				DocId:    "c",
+				UserHash: hasher.NewHash("bob"),
 				Time:     nil,
 			},
 		}
 
 		// TODO next time: Put in views
 
-		fileStats := convert_file_views_to_stats.CreateFileStats(files, views)
+		fileStats := convert_file_views_to_stats.CreateFileStats("", files, views)
+
+		// Verify views of individual files
+		assert.Equal(t, 3, fileStats["a"].ViewCount)
+		assert.Equal(t, 5, fileStats["b"].ViewCount)
+		assert.Equal(t, 1, fileStats["c"].ViewCount)
+
+		// Verify aggregated use of folders
+		assert.Equal(t, 6, fileStats["d1"].ViewCount)   // 6 = total views of b and c
+		assert.Equal(t, 9, fileStats["root"].ViewCount) // 6 = total views of a + b and c
+
+		// Verify unique views for folders
+		//assert.Equal(t, 6, fileStats["d1"].UniqueViewCount) // 6 = total views of b and c
 
 		// TODO make some smart asserts
 
