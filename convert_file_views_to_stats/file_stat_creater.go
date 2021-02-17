@@ -37,17 +37,25 @@ func convertFilesToFileStats(files []*get_file_list.FileOrFolder, fileStats map[
 }
 
 func setParentsAndChildren(files []*get_file_list.FileOrFolder, fileStats map[string]*FileStat, rootLevelFile string) {
+	root := &FileStat{
+		Id: "root",
+	}
+	fileStats["root"] = root
+
 	for _, file := range files {
 		fs := fileStats[file.Id]
 
+		var parent *FileStat
 		if file.Parent == rootLevelFile {
-			// fileStats[rootLevelFile] doesn't exist, as it is the root, so we're skipping it
-			continue
+			parent = root
+		} else {
+			parent = fileStats[file.Parent]
 		}
 
-		fs.Parent = fileStats[file.Parent]
+		fs.Parent = parent
 		fs.Parent.Children = append(fs.Parent.Children, fs)
 	}
+
 }
 
 func aggregateViews(node *FileStat) {

@@ -13,11 +13,6 @@ func TestJoin(t *testing.T) {
 	t.Run("should build correct tree structure", func(t *testing.T) {
 		files := []*get_file_list.FileOrFolder{
 			{
-				Id:     "root",
-				Name:   "DummyRoot",
-				Parent: "",
-			},
-			{
 				Id:     "a",
 				Name:   "a.txt",
 				Parent: "root",
@@ -87,9 +82,7 @@ func TestJoin(t *testing.T) {
 			},
 		}
 
-		// TODO next time: Put in views
-
-		fileStats := convert_file_views_to_stats.CreateFileStats("", files, views)
+		fileStats := convert_file_views_to_stats.CreateFileStats("root", files, views)
 
 		// Verify views of individual files
 		assert.Equal(t, 3, fileStats["a"].ViewCount)
@@ -102,18 +95,5 @@ func TestJoin(t *testing.T) {
 
 		// Verify unique views for folders
 		//assert.Equal(t, 6, fileStats["d1"].UniqueViewCount) // 6 = total views of b and c
-
-		// TODO make some smart asserts
-
-		//root := &FileStat{
-		//	Id:        "root",
-		//	ViewCount: 0,
-		//	Parent:    nil,
-		//	Children:  nil,
-		//}
-		//
-		//assert.Equal(t, "root", fileStats["root"].Id)
-		//assert.Equal(t, 0, fileStats["root"].ViewCount)
-
 	})
 }
