@@ -1,4 +1,4 @@
-package statistics_printer
+package print_statistics
 
 import (
 	"fmt"
@@ -16,6 +16,7 @@ func Print(fileStats map[string]*convert_file_views_to_stats.FileStat) {
 	printViews(folderViews)
 }
 
+//goland:noinspection GoUnusedParameter
 func toFolderViews(stats map[string]*convert_file_views_to_stats.FileStat) []*FolderViews {
 	return nil
 }

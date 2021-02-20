@@ -5,7 +5,7 @@ import (
 	"github.com/oslokommune/gdrive-statistics/file_storage"
 	"net/http"
 
-	"github.com/oslokommune/gdrive-statistics/memory_usage"
+	"github.com/oslokommune/gdrive-statistics/calc_memory_usage"
 	"google.golang.org/api/drive/v3"
 )
 
@@ -53,7 +53,7 @@ func (g *FileListGetter) getFilesFromApi(pageCount int) ([]*FileOrFolder, error)
 		i++
 
 		if len(pageToken) > 0 {
-			memory_usage.PrintMemUsage()
+			calc_memory_usage.PrintMemUsage()
 			fmt.Printf("Fetching page %d: %s\n", i, pageToken)
 		}
 

@@ -4,7 +4,7 @@ import (
 	"fmt"
 	"github.com/oslokommune/gdrive-statistics/convert_file_views_to_stats"
 	"github.com/oslokommune/gdrive-statistics/get_api_data"
-	"github.com/oslokommune/gdrive-statistics/statistics_printer"
+	"github.com/oslokommune/gdrive-statistics/print_statistics"
 	"log"
 	"os"
 
@@ -58,7 +58,7 @@ func run() error {
 	fileStats := convert_file_views_to_stats.CreateFileStats(gDriveId, files, views)
 	fmt.Println(fileStats)
 
-	statistics_printer.Print(fileStats)
+	print_statistics.Print(fileStats)
 
 	/*
 		| Mappe                   | Antall views | Antall unike views |

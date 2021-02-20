@@ -1,4 +1,4 @@
-package memory_usage
+package calc_memory_usage
 
 import (
 	"fmt"

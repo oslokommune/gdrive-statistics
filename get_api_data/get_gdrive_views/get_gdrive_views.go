@@ -6,7 +6,8 @@ import (
 	"net/http"
 	"time"
 
-	"github.com/oslokommune/gdrive-statistics/memory_usage"
+	"github.com/oslokommune/gdrive-statistics/calc_memory_usage"
+
 	admin "google.golang.org/api/admin/reports/v1"
 )
 
@@ -56,7 +57,7 @@ func (v *GDriveViewsGetter) getViewsFromApi(startTime *time.Time) ([]*GdriveView
 		i++
 
 		if len(pageToken) > 0 {
-			memory_usage.PrintMemUsage()
+			calc_memory_usage.PrintMemUsage()
 			fmt.Printf("Fetching page %d: %s\n", i, pageToken)
 		}
 
