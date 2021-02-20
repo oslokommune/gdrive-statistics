@@ -1,9 +1,9 @@
 package convert_file_views_to_stats_test
 
 import (
-	"github.com/oslokommune/gdrive-statistics/api_data_getter/get_file_list"
-	"github.com/oslokommune/gdrive-statistics/api_data_getter/get_gdrive_views"
 	"github.com/oslokommune/gdrive-statistics/convert_file_views_to_stats"
+	"github.com/oslokommune/gdrive-statistics/get_api_data/get_file_list"
+	"github.com/oslokommune/gdrive-statistics/get_api_data/get_gdrive_views"
 	"github.com/oslokommune/gdrive-statistics/hasher"
 	"github.com/stretchr/testify/assert"
 	"testing"

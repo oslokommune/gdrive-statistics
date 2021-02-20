@@ -1,12 +1,12 @@
-package api_data_getter
+package get_api_data
 
 import (
 	"fmt"
 	"github.com/oslokommune/gdrive-statistics/file_storage"
 	"time"
 
-	"github.com/oslokommune/gdrive-statistics/api_data_getter/get_file_list"
-	"github.com/oslokommune/gdrive-statistics/api_data_getter/get_gdrive_views"
+	"github.com/oslokommune/gdrive-statistics/get_api_data/get_file_list"
+	"github.com/oslokommune/gdrive-statistics/get_api_data/get_gdrive_views"
 )
 
 type ApiDataGetter struct {

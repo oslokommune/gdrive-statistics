@@ -3,15 +3,15 @@ package main
 import (
 	"fmt"
 	"github.com/oslokommune/gdrive-statistics/convert_file_views_to_stats"
+	"github.com/oslokommune/gdrive-statistics/get_api_data"
 	"github.com/oslokommune/gdrive-statistics/statistics_printer"
 	"log"
 	"os"
 
-	"github.com/oslokommune/gdrive-statistics/api_data_getter"
-	"github.com/oslokommune/gdrive-statistics/api_data_getter/gdrive_client"
-	"github.com/oslokommune/gdrive-statistics/api_data_getter/get_file_list"
-	"github.com/oslokommune/gdrive-statistics/api_data_getter/get_gdrive_views"
 	"github.com/oslokommune/gdrive-statistics/file_storage"
+	"github.com/oslokommune/gdrive-statistics/get_api_data/gdrive_client"
+	"github.com/oslokommune/gdrive-statistics/get_api_data/get_file_list"
+	"github.com/oslokommune/gdrive-statistics/get_api_data/get_gdrive_views"
 )
 
 const Debug = true
@@ -46,7 +46,7 @@ func run() error {
 	fileListGetter := get_file_list.New(client, gDriveId, storage)
 	gDriveViewsGetter := get_gdrive_views.New(client, gDriveId, storage)
 
-	apiDataGetter := api_data_getter.New(Debug, fileListGetter, gDriveViewsGetter, storage)
+	apiDataGetter := get_api_data.New(Debug, fileListGetter, gDriveViewsGetter, storage)
 
 	files, views, err := apiDataGetter.GetDataFromApi()
 	if err != nil {
