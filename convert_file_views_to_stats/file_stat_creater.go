@@ -6,7 +6,7 @@ import (
 )
 
 func CreateFileStats(rootLevelFileId string, files []*get_file_list.FileOrFolder, views []*get_gdrive_views.GdriveViewEvent) map[string]*FileStat {
-	fileStats := toFileStats(rootLevelFileId, files)
+	fileStats := toFileStats(rootLevelFileId, files, views)
 
 	root := fileStats[rootLevelFileId]
 	aggregateViews(root)
@@ -14,16 +14,16 @@ func CreateFileStats(rootLevelFileId string, files []*get_file_list.FileOrFolder
 	return fileStats
 }
 
-func toFileStats(rootLevelFile string, files []*get_file_list.FileOrFolder) map[string]*FileStat {
+func toFileStats(rootLevelFile string, files []*get_file_list.FileOrFolder, views []*get_gdrive_views.GdriveViewEvent) map[string]*FileStat {
 	fileStats := make(map[string]*FileStat)
 
-	convertFilesToFileStats(files, fileStats)
+	mergeFilesAndViewsToFileStats(files, fileStats, views)
 	setParentsAndChildren(files, fileStats, rootLevelFile)
 
 	return fileStats
 }
 
-func convertFilesToFileStats(files []*get_file_list.FileOrFolder, fileStats map[string]*FileStat) {
+func mergeFilesAndViewsToFileStats(files []*get_file_list.FileOrFolder, fileStats map[string]*FileStat, views []*get_gdrive_views.GdriveViewEvent) {
 	for _, file := range files {
 		fileStat := FileStat{
 			Id:        file.Id,
@@ -34,19 +34,26 @@ func convertFilesToFileStats(files []*get_file_list.FileOrFolder, fileStats map[
 
 		fileStats[fileStat.Id] = &fileStat
 	}
+
+	for _, view := range views {
+		fileStats[view.DocId].ViewCount++
+	}
 }
 
-func setParentsAndChildren(files []*get_file_list.FileOrFolder, fileStats map[string]*FileStat, rootLevelFile string) {
+// setParentsAndChildren sets the parent and children pointers of the FileStats.
+// The function also creates a top level root FileStat, because files from Gdrive doesn't contain the root element
+// itself, just pointers to it.
+func setParentsAndChildren(files []*get_file_list.FileOrFolder, fileStats map[string]*FileStat, rootLevelFileId string) {
 	root := &FileStat{
-		Id: "root",
+		Id: rootLevelFileId,
 	}
-	fileStats["root"] = root
+	fileStats[rootLevelFileId] = root
 
 	for _, file := range files {
 		fs := fileStats[file.Id]
 
 		var parent *FileStat
-		if file.Parent == rootLevelFile {
+		if file.Parent == rootLevelFileId {
 			parent = root
 		} else {
 			parent = fileStats[file.Parent]

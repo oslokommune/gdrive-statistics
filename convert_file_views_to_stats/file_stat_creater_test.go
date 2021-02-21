@@ -1,7 +1,6 @@
-package convert_file_views_to_stats_test
+package convert_file_views_to_stats
 
 import (
-	"github.com/oslokommune/gdrive-statistics/convert_file_views_to_stats"
 	"github.com/oslokommune/gdrive-statistics/get_api_data/get_file_list"
 	"github.com/oslokommune/gdrive-statistics/get_api_data/get_gdrive_views"
 	"github.com/oslokommune/gdrive-statistics/hasher"
@@ -9,91 +8,181 @@ import (
 	"testing"
 )
 
-func TestJoin(t *testing.T) {
+func TestCreateFileStats(t *testing.T) {
 	t.Run("should build correct tree structure", func(t *testing.T) {
+		// Given
+		/* Directory structure:
+		   root/
+		     a.txt
+		     d1/
+		       b.txt
+		       c.txt
+		*/
 		files := []*get_file_list.FileOrFolder{
-			{
-				Id:     "a",
-				Name:   "a.txt",
-				Parent: "root",
-			},
-			{
-				Id:     "d1",
-				Name:   "DIR1",
-				Parent: "root",
-			},
-			{
-				Id:     "b",
-				Name:   "b.txt",
-				Parent: "d1",
-			},
-			{
-				Id:     "c",
-				Name:   "c.txt",
-				Parent: "d1",
-			},
+			{Id: "a", Name: "a.txt", Parent: "root"},
+			{Id: "d1", Name: "DIR1", Parent: "root"},
+			{Id: "b", Name: "b.txt", Parent: "d1"},
+			{Id: "c", Name: "c.txt", Parent: "d1"},
 		}
 
 		views := []*get_gdrive_views.GdriveViewEvent{
-			{
-				DocId:    "a",
-				UserHash: hasher.NewHash("joe"),
-				Time:     nil,
-			},
-			{
-				DocId:    "a",
-				UserHash: hasher.NewHash("bob"),
-				Time:     nil,
-			},
-			{
-				DocId:    "a",
-				UserHash: hasher.NewHash("bob"),
-				Time:     nil,
-			},
-			{
-				DocId:    "b",
-				UserHash: hasher.NewHash("joe"),
-				Time:     nil,
-			},
-			{
-				DocId:    "b",
-				UserHash: hasher.NewHash("joe"),
-				Time:     nil,
-			},
-			{
-				DocId:    "b",
-				UserHash: hasher.NewHash("joe"),
-				Time:     nil,
-			},
-			{
-				DocId:    "b",
-				UserHash: hasher.NewHash("bob"),
-				Time:     nil,
-			},
-			{
-				DocId:    "b",
-				UserHash: hasher.NewHash("bob"),
-				Time:     nil,
-			},
-			{
-				DocId:    "c",
-				UserHash: hasher.NewHash("bob"),
-				Time:     nil,
-			},
+			{DocId: "a", UserHash: hasher.NewHash("joe"), Time: nil},
+			{DocId: "a", UserHash: hasher.NewHash("bob"), Time: nil},
+			{DocId: "a", UserHash: hasher.NewHash("bob"), Time: nil},
+			{DocId: "b", UserHash: hasher.NewHash("joe"), Time: nil},
+			{DocId: "b", UserHash: hasher.NewHash("joe"), Time: nil},
+			{DocId: "b", UserHash: hasher.NewHash("joe"), Time: nil},
+			{DocId: "b", UserHash: hasher.NewHash("bob"), Time: nil},
+			{DocId: "b", UserHash: hasher.NewHash("bob"), Time: nil},
+			{DocId: "c", UserHash: hasher.NewHash("bob"), Time: nil},
 		}
 
-		fileStats := convert_file_views_to_stats.CreateFileStats("root", files, views)
+		// When
+		fileStats := CreateFileStats("root", files, views)
 
-		// Verify views of individual files
-		assert.Equal(t, 3, fileStats["a"].ViewCount)
-		assert.Equal(t, 5, fileStats["b"].ViewCount)
-		assert.Equal(t, 1, fileStats["c"].ViewCount)
+		// Then verify views of individual files
+		assert.Equal(t, 3, fileStats["a"].ViewCount, "a")
+		assert.Equal(t, 5, fileStats["b"].ViewCount, "a")
+		assert.Equal(t, 1, fileStats["c"].ViewCount, "c")
 
 		// Verify aggregated use of folders
-		assert.Equal(t, 6, fileStats["d1"].ViewCount)   // 6 = total views of b and c
-		assert.Equal(t, 9, fileStats["root"].ViewCount) // 6 = total views of a + b and c
+		assert.Equal(t, 6, fileStats["d1"].ViewCount, "d1")     // 6 = total views of b and c
+		assert.Equal(t, 9, fileStats["root"].ViewCount, "root") // 6 = total views of a + b and c
 
 		// Verify unique views for folders
 		//assert.Equal(t, 6, fileStats["d1"].UniqueViewCount) // 6 = total views of b and c
+	})
+}
+
+func TestSetParentsAndChildren(t *testing.T) {
+	t.Run("should build correct tree structure from filestats", func(t *testing.T) {
+		// Given
+		rootId := "myroot"
+		files := []*get_file_list.FileOrFolder{
+			{Id: "a", Name: "a.txt", Parent: rootId},
+			{Id: "d1", Name: "DIR1", Parent: rootId},
+			{Id: "b", Name: "b.txt", Parent: "d1"},
+			{Id: "c", Name: "c.txt", Parent: "d1"},
+			{Id: "d2", Name: "DIR2", Parent: "d1"},
+			{Id: "e", Name: "e.txt", Parent: "d2"},
+		}
+
+		fileStats := make(map[string]*FileStat)
+
+		fileStats["a"] = &FileStat{Id: "a", ViewCount: 0, Parent: nil, Children: nil}
+		fileStats["d1"] = &FileStat{Id: "c", ViewCount: 0, Parent: nil, Children: nil}
+		fileStats["b"] = &FileStat{Id: "b", ViewCount: 0, Parent: nil, Children: nil}
+		fileStats["c"] = &FileStat{Id: "c", ViewCount: 3, Parent: nil, Children: nil}
+		fileStats["d2"] = &FileStat{Id: "c", ViewCount: 0, Parent: nil, Children: nil}
+		fileStats["e"] = &FileStat{Id: "c", ViewCount: 0, Parent: nil, Children: nil}
+
+		// When
+		setParentsAndChildren(files, fileStats, rootId)
+		//fileStats := convert_file_views_to_stats.CreateFileStats("root", files, views)
+
+		// Then
+		assert.Equal(t, rootId, fileStats["a"].Parent.Id)
+		assert.Equal(t, rootId, fileStats["d1"].Parent.Id)
+
+		assert.Equal(t, fileStats["d1"], fileStats["b"].Parent)
+		assert.Equal(t, fileStats["d1"], fileStats["c"].Parent)
+		assert.Equal(t, fileStats["d1"], fileStats["d2"].Parent)
+		assert.Equal(t, fileStats["d2"], fileStats["e"].Parent)
+
+		assert.Equal(t, 3, len(fileStats["d1"].Children))
+
+		assert.Contains(t, fileStats["d1"].Children, fileStats["b"])
+		assert.Contains(t, fileStats["d1"].Children, fileStats["c"])
+		assert.Contains(t, fileStats["d1"].Children, fileStats["d2"])
+
+		assert.Equal(t, 1, len(fileStats["d2"].Children))
+		assert.Contains(t, fileStats["d2"].Children, fileStats["e"])
+	})
+
+	t.Run("should build correct tree structure from files", func(t *testing.T) {
+		rootId := "myroot"
+		a := &get_file_list.FileOrFolder{Id: "a", Parent: rootId}
+		b := &get_file_list.FileOrFolder{Id: "b", Parent: rootId}
+		c := &get_file_list.FileOrFolder{Id: "c", Parent: "a"}
+
+		files := []*get_file_list.FileOrFolder{a, b, c}
+		var views []*get_gdrive_views.GdriveViewEvent
+
+		fileStats := toFileStats(rootId, files, views)
+
+		fsRoot := fileStats[rootId]
+
+		assert.Contains(t, fsRoot.Children, fileStats["a"])
+		assert.Contains(t, fsRoot.Children, fileStats["b"])
+		assert.Len(t, fsRoot.Children, 2)
+
+		assert.Contains(t, fileStats["a"].Children, fileStats["c"])
+		assert.Len(t, fileStats["a"].Children, 1)
+
+		assert.Len(t, fileStats["b"].Children, 0)
+	})
+}
+
+func TestCalcDirViewCount(t *testing.T) {
+	t.Run("should set root view count to sum of two children", func(t *testing.T) {
+		root := &FileStat{
+			Id:        "root",
+			ViewCount: 0,
+			Parent:    nil,
+		}
+
+		a := &FileStat{
+			Id:        "a",
+			ViewCount: 1,
+			Parent:    root,
+		}
+
+		b := &FileStat{
+			Id:        "b",
+			ViewCount: 2,
+			Parent:    root,
+		}
+
+		fileStats := map[string]*FileStat{
+			"root": root,
+			"a":    a,
+			"b":    b,
+		}
+
+		root.Children = []*FileStat{a, b}
+		aggregateViews(root)
+
+		assert.Equal(t, 3, fileStats["root"].ViewCount)
+	})
+
+	t.Run("should aggregate tree structure", func(t *testing.T) {
+		root := &FileStat{Id: "root", ViewCount: 0, Parent: nil}
+
+		a := &FileStat{Id: "a.txt", ViewCount: 1, Parent: root}
+		b := &FileStat{Id: "b.txt", ViewCount: 2, Parent: root}
+		dir1 := &FileStat{Id: "DIR1", ViewCount: 0, Parent: root}
+
+		root.Children = []*FileStat{a, b, dir1}
+		c := &FileStat{Id: "c.txt", ViewCount: 3, Parent: dir1}
+
+		dir2 := &FileStat{Id: "D2", ViewCount: 0, Parent: dir1}
+		dir1.Children = []*FileStat{c, dir2}
+
+		d := &FileStat{Id: "d.txt", ViewCount: 4, Parent: dir2}
+		dir2.Children = []*FileStat{d}
+
+		fileStats := map[string]*FileStat{
+			root.Id: root,
+			a.Id:    a,
+			b.Id:    b,
+			"DIR1":  dir1,
+			"c":     c,
+			"D2":    dir2,
+			"d":     d,
+		}
+
+		aggregateViews(root)
+
+		assert.Equal(t, 10, fileStats["root"].ViewCount)
 	})
 }
