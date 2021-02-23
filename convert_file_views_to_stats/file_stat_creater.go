@@ -35,8 +35,15 @@ func mergeFilesAndViewsToFileStats(files []*get_file_list.FileOrFolder, fileStat
 		fileStats[fileStat.Id] = &fileStat
 	}
 
+	calc := NewUniqueViewCalculator()
+
 	for _, view := range views {
 		fileStats[view.DocId].ViewCount++
+		calc.addViewForDocument(view.DocId, view.UserHash)
+	}
+
+	for docId, fs := range fileStats {
+		fs.UniqueViewCount = calc.getUniqueViewsForDocument(docId)
 	}
 }
 
@@ -73,5 +80,6 @@ func aggregateViews(node *FileStat) {
 	for _, child := range node.Children {
 		aggregateViews(child)
 		node.ViewCount += child.ViewCount
+		node.UniqueViewCount += child.UniqueViewCount
 	}
 }
