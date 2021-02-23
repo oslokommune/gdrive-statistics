@@ -3,18 +3,18 @@ package main
 import (
 	"fmt"
 	"github.com/oslokommune/gdrive-statistics/convert_file_views_to_stats"
-	"github.com/oslokommune/gdrive-statistics/get_api_data"
-	"github.com/oslokommune/gdrive-statistics/print_statistics"
-	"log"
-	"os"
-
 	"github.com/oslokommune/gdrive-statistics/file_storage"
+	"github.com/oslokommune/gdrive-statistics/get_api_data"
 	"github.com/oslokommune/gdrive-statistics/get_api_data/gdrive_client"
 	"github.com/oslokommune/gdrive-statistics/get_api_data/get_file_list"
 	"github.com/oslokommune/gdrive-statistics/get_api_data/get_gdrive_views"
+	"github.com/oslokommune/gdrive-statistics/print_statistics"
+	"log"
+	"os"
 )
 
-const Debug = true
+const Debug = false
+const sharedDrive = true
 
 func main() {
 	err := run()
@@ -43,7 +43,7 @@ func run() error {
 		return fmt.Errorf("get client: %w", err)
 	}
 
-	fileListGetter := get_file_list.New(client, gDriveId, storage)
+	fileListGetter := get_file_list.New(client, gDriveId, storage, sharedDrive)
 	gDriveViewsGetter := get_gdrive_views.New(client, gDriveId, storage)
 
 	apiDataGetter := get_api_data.New(Debug, fileListGetter, gDriveViewsGetter, storage)

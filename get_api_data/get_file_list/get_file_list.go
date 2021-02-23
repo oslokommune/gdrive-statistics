@@ -10,16 +10,18 @@ import (
 )
 
 type FileListGetter struct {
-	client   *http.Client
-	gdriveId string
-	storage  *file_storage.FileStorage
+	client      *http.Client
+	gdriveId    string
+	storage     *file_storage.FileStorage
+	sharedDrive bool
 }
 
-func New(client *http.Client, gdriveId string, storage *file_storage.FileStorage) *FileListGetter {
+func New(client *http.Client, gdriveId string, storage *file_storage.FileStorage, sharedDrive bool) *FileListGetter {
 	return &FileListGetter{
-		client:   client,
-		gdriveId: gdriveId,
-		storage:  storage,
+		client:      client,
+		gdriveId:    gdriveId,
+		storage:     storage,
+		sharedDrive: sharedDrive,
 	}
 }
 
@@ -57,17 +59,23 @@ func (g *FileListGetter) getFilesFromApi(pageCount int) ([]*FileOrFolder, error)
 			fmt.Printf("Fetching page %d: %s\n", i, pageToken)
 		}
 
-		fileList, err := srv.Files.List().
-			Corpora("drive").                // Comment if using private drive
-			DriveId(g.gdriveId).             // Comment if using private drive
-			IncludeItemsFromAllDrives(true). // Comment if using private drive
-			SupportsAllDrives(true).         // Comment if using private drive
-			// IncludeItemsFromAllDrives(false). // Remove this if getting from shared drive
+		fileListRequest := srv.Files.List().
 			PageToken(pageToken).
 			Fields("files(id,name,parents),nextPageToken").
 			PageSize(1000).
-			OrderBy("folder,modifiedTime").
-			Do()
+			OrderBy("folder,modifiedTime")
+
+		if g.sharedDrive {
+			fileListRequest.
+				Corpora("drive").
+				DriveId(g.gdriveId).
+				IncludeItemsFromAllDrives(true).
+				SupportsAllDrives(true)
+		} else {
+			fileListRequest.IncludeItemsFromAllDrives(false)
+		}
+
+		fileList, err := fileListRequest.Do()
 		if err != nil {
 			return nil, fmt.Errorf("list gdrive files: %w", err)
 		}
