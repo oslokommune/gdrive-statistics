@@ -15,6 +15,7 @@ import (
 
 const Debug = false
 const sharedDrive = true
+const maxFolderDepth = 2
 
 func main() {
 	err := run()
@@ -55,10 +56,8 @@ func run() error {
 
 	printData(files, views)
 
-	fileStats := convert_file_views_to_stats.CreateFileStats(gDriveId, files, views)
-	fmt.Println(fileStats)
-
-	print_statistics.Print(fileStats)
+	_, root := convert_file_views_to_stats.CreateFileStats(gDriveId, files, views)
+	print_statistics.Print(root, maxFolderDepth)
 
 	/*
 		| Mappe                   | Antall views | Antall unike views |

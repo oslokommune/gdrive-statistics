@@ -52,7 +52,7 @@ func TestCreateFileStats(t *testing.T) {
 		}
 
 		// When
-		fileStats := CreateFileStats(rootId, files, views)
+		fileStats, _ := CreateFileStats(rootId, files, views)
 
 		// Then verify views of individual files
 		assert.Equal(t, 1, fileStats["a"].ViewCount, "a")

@@ -5,13 +5,13 @@ import (
 	"github.com/oslokommune/gdrive-statistics/get_api_data/get_gdrive_views"
 )
 
-func CreateFileStats(rootLevelFileId string, files []*get_file_list.FileOrFolder, views []*get_gdrive_views.GdriveViewEvent) map[string]*FileStat {
+func CreateFileStats(rootLevelFileId string, files []*get_file_list.FileOrFolder, views []*get_gdrive_views.GdriveViewEvent) (map[string]*FileStat, *FileStat) {
 	fileStats := toFileStats(rootLevelFileId, files, views)
 
 	root := fileStats[rootLevelFileId]
 	aggregateViews(root)
 
-	return fileStats
+	return fileStats, root
 }
 
 func toFileStats(rootLevelFile string, files []*get_file_list.FileOrFolder, views []*get_gdrive_views.GdriveViewEvent) map[string]*FileStat {
