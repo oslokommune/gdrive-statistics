@@ -51,7 +51,7 @@ func (v *GDriveViewsGetter) createDocView(activity *admin.Activity) (*GdriveView
 		Time:     &itemTime,
 		UserHash: userHash,
 		DocId:    docId,
-		docTitle: docTitle,
+		DocTitle: docTitle,
 	}
 
 	return view, nil

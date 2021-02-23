@@ -11,7 +11,7 @@ type GdriveViewEvent struct {
 	DocId    string
 	UserHash *hasher.Hash
 	Time     *time.Time
-	docTitle string
+	DocTitle string
 }
 
 func (g GdriveViewEvent) String() string {

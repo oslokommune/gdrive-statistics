@@ -17,10 +17,30 @@ func CreateFileStats(rootLevelFileId string, files []*get_file_list.FileOrFolder
 func toFileStats(rootLevelFile string, files []*get_file_list.FileOrFolder, views []*get_gdrive_views.GdriveViewEvent) map[string]*FileStat {
 	fileStats := make(map[string]*FileStat)
 
+	views = stripViewsThatDontHaveAFile(files, views)
 	mergeFilesAndViewsToFileStats(files, fileStats, views)
 	setParentsAndChildren(files, fileStats, rootLevelFile)
 
 	return fileStats
+}
+
+// stripViewsThatDontHaveAFile removes views that doesn't have a corresponding file. These views are most likely for
+// files that are not shared with the organization.
+func stripViewsThatDontHaveAFile(files []*get_file_list.FileOrFolder, views []*get_gdrive_views.GdriveViewEvent) []*get_gdrive_views.GdriveViewEvent {
+	fileMap := make(map[string]bool)
+	for _, file := range files {
+		fileMap[file.Id] = true
+	}
+
+	viewsWithFile := make([]*get_gdrive_views.GdriveViewEvent, 0)
+	for _, view := range views {
+		if _, ok := fileMap[view.DocId]; ok {
+			viewsWithFile = append(viewsWithFile, view)
+
+		}
+	}
+
+	return viewsWithFile
 }
 
 func mergeFilesAndViewsToFileStats(files []*get_file_list.FileOrFolder, fileStats map[string]*FileStat, views []*get_gdrive_views.GdriveViewEvent) {

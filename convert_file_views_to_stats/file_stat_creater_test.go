@@ -128,6 +128,7 @@ func TestSetParentsAndChildren(t *testing.T) {
 	})
 
 	t.Run("should build correct tree structure from files", func(t *testing.T) {
+		// Given
 		rootId := "myroot"
 		a := &get_file_list.FileOrFolder{Id: "a", Parent: rootId}
 		b := &get_file_list.FileOrFolder{Id: "b", Parent: rootId}
@@ -136,8 +137,10 @@ func TestSetParentsAndChildren(t *testing.T) {
 		files := []*get_file_list.FileOrFolder{a, b, c}
 		var views []*get_gdrive_views.GdriveViewEvent
 
+		// When
 		fileStats := toFileStats(rootId, files, views)
 
+		// Then
 		fsRoot := fileStats[rootId]
 
 		assert.Contains(t, fsRoot.Children, fileStats["a"])
@@ -245,4 +248,49 @@ func TestUniqueViewCount(t *testing.T) {
 		// Then
 		assert.Equal(t, 3, root.UniqueViewCount)
 	})
+}
+
+func TestValidateFilesAndViews(t *testing.T) {
+	testCases := []struct {
+		name          string
+		files         []*get_file_list.FileOrFolder
+		views         []*get_gdrive_views.GdriveViewEvent
+		expectedViews []*get_gdrive_views.GdriveViewEvent
+	}{
+		{
+			name: "should not return error when all views can be connected to a file",
+			files: []*get_file_list.FileOrFolder{
+				{Id: "a", Name: "a.txt", Parent: "someRoot"},
+			},
+			views: []*get_gdrive_views.GdriveViewEvent{
+				{DocId: "a", UserHash: hasher.NewHash("joe"), Time: nil},
+				{DocId: "a", UserHash: hasher.NewHash("bob"), Time: nil},
+			},
+			expectedViews: []*get_gdrive_views.GdriveViewEvent{
+				{DocId: "a", UserHash: hasher.NewHash("joe"), Time: nil},
+				{DocId: "a", UserHash: hasher.NewHash("bob"), Time: nil},
+			},
+		},
+		{
+			name: "should return error when all views can be connected to a file",
+			files: []*get_file_list.FileOrFolder{
+				{Id: "a", Name: "a.txt", Parent: "someRoot"},
+			},
+			views: []*get_gdrive_views.GdriveViewEvent{
+				{DocId: "a", UserHash: hasher.NewHash("joe"), Time: nil},
+				{DocId: "b", UserHash: hasher.NewHash("bob"), Time: nil},
+			},
+			expectedViews: []*get_gdrive_views.GdriveViewEvent{
+				{DocId: "a", UserHash: hasher.NewHash("joe"), Time: nil},
+			},
+		},
+	}
+	for _, tc := range testCases {
+		tc := tc
+		t.Run(tc.name, func(t *testing.T) {
+			views := stripViewsThatDontHaveAFile(tc.files, tc.views)
+			assert.Equal(t, tc.expectedViews, views)
+		})
+	}
+
 }
