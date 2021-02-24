@@ -9,6 +9,8 @@ func CreateFileStats(rootLevelFileId string, files []*get_file_list.FileOrFolder
 	fileStats := toFileStats(rootLevelFileId, files, views)
 
 	root := fileStats[rootLevelFileId]
+	root.DocTitle = "root"
+
 	aggregateViews(root)
 
 	return fileStats, root
@@ -36,7 +38,6 @@ func stripViewsThatDontHaveAFile(files []*get_file_list.FileOrFolder, views []*g
 	for _, view := range views {
 		if _, ok := fileMap[view.DocId]; ok {
 			viewsWithFile = append(viewsWithFile, view)
-
 		}
 	}
 
@@ -47,6 +48,7 @@ func mergeFilesAndViewsToFileStats(files []*get_file_list.FileOrFolder, fileStat
 	for _, file := range files {
 		fileStat := FileStat{
 			Id:        file.Id,
+			DocTitle:  file.Name,
 			ViewCount: 0,
 			Parent:    nil,
 			Children:  nil,

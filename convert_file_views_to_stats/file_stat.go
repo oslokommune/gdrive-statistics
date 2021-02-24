@@ -1,10 +1,13 @@
 package convert_file_views_to_stats
 
-import "fmt"
+import (
+	"fmt"
+)
 
 // FileStat is a file or folder with view statistics
 type FileStat struct {
 	Id              string
+	DocTitle        string
 	ViewCount       int
 	UniqueViewCount int
 	Parent          *FileStat

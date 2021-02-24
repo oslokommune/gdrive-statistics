@@ -15,7 +15,7 @@ import (
 
 const Debug = false
 const sharedDrive = true
-const maxFolderDepth = 2
+const maxFolderDepth = 1
 
 func main() {
 	err := run()

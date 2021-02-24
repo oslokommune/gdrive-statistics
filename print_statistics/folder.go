@@ -1,9 +1,13 @@
 package print_statistics
 
-import "fmt"
+import (
+	"fmt"
+	"github.com/oslokommune/gdrive-statistics/convert_file_views_to_stats"
+)
 
 type Folder struct {
 	docId    string
+	docTitle string
 	parent   *Folder
 	children []*Folder
 
@@ -15,20 +19,12 @@ func (f *Folder) String() string {
 	return fmt.Sprintf("[DocId: %s]", f.docId)
 }
 
-func newFolder(docId string, parent *Folder, children []*Folder, views int, uniqueViews int) *Folder {
-	var actualChildren []*Folder
-	if children == nil {
-		actualChildren = make([]*Folder, 0)
-	} else {
-		actualChildren = children
-	}
-
+func newFolderFromFile(ff *convert_file_views_to_stats.FileStat) *Folder {
 	return &Folder{
-		docId:           docId,
-		parent:          parent,
-		children:        actualChildren,
-		viewCount:       views,
-		uniqueViewcount: uniqueViews,
+		docId:           ff.Id,
+		docTitle:        ff.DocTitle,
+		viewCount:       ff.ViewCount,
+		uniqueViewcount: ff.UniqueViewCount,
 	}
 }
 
