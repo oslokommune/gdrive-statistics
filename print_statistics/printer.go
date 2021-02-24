@@ -33,15 +33,8 @@ func toFolder(root *c.FileStat, maxDepth int) *Folder {
 }
 
 func sortFoldersByViews(folder *Folder) {
-	//sortedChildren := make([]*Folder, len(folder.children))
-	//
-	//for i, child := range folder.children {
-	//	sortedChildren[i] = child
-	//}
-
 	sort.Slice(folder.children, func(i, j int) bool {
 		return folder.children[i].viewCount > folder.children[j].viewCount
-		//return planets[i].Axis < planets[j].Axis
 	})
 }
 
@@ -53,9 +46,6 @@ func findFolders(nodeToExamine *c.FileStat, maxDepth int, currentDepth int, fold
 	}
 
 	if len(nodeToExamine.Children) > 0 {
-		// node is a folder!
-		//childFolder := newFolder(
-		//	nodeToExamine.Id, nodeToExamine.DocTitle, folderNode, nil, nodeToExamine.ViewCount, nodeToExamine.UniqueViewCount)
 		childFolder := newFolderFromFile(nodeToExamine)
 		childFolder.parent = folderNode
 
@@ -67,19 +57,21 @@ func findFolders(nodeToExamine *c.FileStat, maxDepth int, currentDepth int, fold
 	}
 }
 
+const spaceForColumn = 20
+
 func printFolderTree(printer *ColumnPrinter, f *Folder, currentDepth int) {
 	if currentDepth == 0 {
 		printer.add("FOLDER")
-		printer.add("VIEWS")
-		printer.add("UNIQUE VIEWS")
+		printer.add(rightIndent(spaceForColumn, "VIEWS"))
+		printer.add(rightIndent(spaceForColumn, "UNIQUE VIEWS"))
 		fmt.Println(printer.get())
 
 		printer.reset()
 	}
 
 	indent := strings.Repeat(" ", currentDepth*2)
-	viewCount := rightIndent(7, strconv.Itoa(f.viewCount))
-	uniqueViewCount := rightIndent(7, strconv.Itoa(f.viewCount))
+	viewCount := rightIndent(spaceForColumn, strconv.Itoa(f.viewCount))
+	uniqueViewCount := rightIndent(spaceForColumn, strconv.Itoa(f.viewCount))
 
 	printer.add(indent + f.docTitle)
 	printer.add(viewCount)
