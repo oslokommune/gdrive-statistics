@@ -12,7 +12,7 @@ import (
 func Print(root *c.FileStat, maxDepth int) {
 	rootFolder := toFolder(root, maxDepth)
 
-	printer := NewColumnPrinter([]int{45, 10})
+	printer := NewColumnPrinter([]int{75, 10})
 	printFolderTree(printer, rootFolder, 0)
 }
 
@@ -69,13 +69,17 @@ func printFolderTree(printer *ColumnPrinter, f *Folder, currentDepth int) {
 		printer.reset()
 	}
 
+	if f.viewCount == 0 && f.uniqueViewcount == 0 {
+		return
+	}
+
 	indent := strings.Repeat(" ", currentDepth*2)
 	viewCount := rightIndent(spaceForColumn, strconv.Itoa(f.viewCount))
-	uniqueViewCount := rightIndent(spaceForColumn, strconv.Itoa(f.viewCount))
+	uniqueViewCount := rightIndent(spaceForColumn, strconv.Itoa(f.uniqueViewcount))
 
-	printer.add(indent + f.docTitle)
-	printer.add(viewCount)
-	printer.add(uniqueViewCount)
+	printer.add(indent + f.docTitle + ",")
+	printer.add(viewCount + ",")
+	printer.add(uniqueViewCount + ",")
 
 	fmt.Println(printer.get())
 	printer.reset()
