@@ -11,21 +11,34 @@ import (
 	"github.com/oslokommune/gdrive-statistics/print_statistics"
 	"log"
 	"os"
+	"strconv"
 	"time"
 )
 
 const Debug = false
 const sharedDrive = true
-const maxFolderDepth = 1
 
 func main() {
-	err := run()
+
+	maxFolderDepth := 1
+	if len(os.Args[1:]) > 0 {
+		depth, err := strconv.Atoi(os.Args[1])
+		if err != nil {
+			fmt.Printf("USAGE: %s <folder depth>\n", os.Args[0])
+			fmt.Printf("EXAMPLE: %s 2\n", os.Args[0])
+			return
+		}
+
+		maxFolderDepth = depth
+	}
+
+	err := run(maxFolderDepth)
 	if err != nil {
 		log.Fatalf("Error while running application: %v", err)
 	}
 }
 
-func run() error {
+func run(maxFolderDepth int) error {
 	gDriveId, ok := os.LookupEnv("GOOGLE_DRIVE_ID")
 	if !ok {
 		return fmt.Errorf("env need to be set: GOOGLE_DRIVE_ID")

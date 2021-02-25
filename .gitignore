@@ -1,6 +1,7 @@
 # Project specific
 *.txt
 *.json
+main
 
 # --- GO
 
