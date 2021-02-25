@@ -36,6 +36,10 @@ func sortFoldersByViews(folder *Folder) {
 	sort.Slice(folder.children, func(i, j int) bool {
 		return folder.children[i].viewCount > folder.children[j].viewCount
 	})
+
+	for _, subFolder := range folder.children {
+		sortFoldersByViews(subFolder)
+	}
 }
 
 // folders = filestats that are a parent of a child
