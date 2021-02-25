@@ -11,6 +11,7 @@ import (
 	"github.com/oslokommune/gdrive-statistics/print_statistics"
 	"log"
 	"os"
+	"time"
 )
 
 const Debug = false
@@ -47,9 +48,15 @@ func run() error {
 	fileListGetter := get_file_list.New(client, gDriveId, storage, sharedDrive)
 	gDriveViewsGetter := get_gdrive_views.New(client, gDriveId, storage)
 
+	var startTime time.Time
+	if Debug {
+		startTime = time.Now().AddDate(0, 0, -2)
+	} else {
+		startTime = time.Now().AddDate(0, -3, 0)
+	}
 	apiDataGetter := get_api_data.New(Debug, fileListGetter, gDriveViewsGetter, storage)
 
-	files, views, err := apiDataGetter.GetDataFromApi()
+	files, views, err := apiDataGetter.GetDataFromApi(startTime)
 	if err != nil {
 		return fmt.Errorf("get data from Google API(s): %w", err)
 	}
@@ -58,13 +65,6 @@ func run() error {
 
 	_, root := convert_file_views_to_stats.CreateFileStats(gDriveId, files, views)
 	print_statistics.Print(root, maxFolderDepth)
-
-	/*
-		| Mappe                   | Antall views | Antall unike views |
-		| Administrasjon/         |          500 |                100 |
-		| Administrasjon/Allmøter |          300 |                 50 |
-		| osv                     |          osv |                osv |
-	*/
 
 	return nil
 }

@@ -30,13 +30,13 @@ func New(
 	}
 }
 
-func (g *ApiDataGetter) GetDataFromApi() ([]*get_file_list.FileOrFolder, []*get_gdrive_views.GdriveViewEvent, error) {
+func (g *ApiDataGetter) GetDataFromApi(startTime time.Time) ([]*get_file_list.FileOrFolder, []*get_gdrive_views.GdriveViewEvent, error) {
 	files, err := g.getFilesAndFolders()
 	if err != nil {
 		return nil, nil, fmt.Errorf("get and store files and folders: %w", err)
 	}
 
-	views, err := g.getViewEvents()
+	views, err := g.getViewEvents(startTime)
 	if err != nil {
 		return nil, nil, fmt.Errorf("get and store view events: %w", err)
 	}
@@ -77,7 +77,7 @@ func (g *ApiDataGetter) GetAndStoreFilesAndFolders(filename string) ([]*get_file
 	return files, nil
 }
 
-func (g *ApiDataGetter) getViewEvents() ([]*get_gdrive_views.GdriveViewEvent, error) {
+func (g *ApiDataGetter) getViewEvents(startTime time.Time) ([]*get_gdrive_views.GdriveViewEvent, error) {
 	filename := "views.json"
 	fileExists, err := g.storage.AppFileExists(filename)
 	if err != nil {
@@ -85,21 +85,14 @@ func (g *ApiDataGetter) getViewEvents() ([]*get_gdrive_views.GdriveViewEvent, er
 	}
 
 	if !fileExists {
-		return g.getAndStoreViewEvents(filename)
+		return g.getAndStoreViewEvents(filename, startTime)
 	} else {
 		fmt.Printf("File %s already exists, skipping API call to fetch GDrive views\n", filename)
 		return g.gDriveViewsGetter.LoadFromFile(filename)
 	}
 }
 
-func (g *ApiDataGetter) getAndStoreViewEvents(filename string) ([]*get_gdrive_views.GdriveViewEvent, error) {
-	var startTime time.Time
-	if g.debug {
-		startTime = time.Now().AddDate(0, 0, -2)
-	} else {
-		startTime = time.Now().AddDate(0, -3, 0)
-	}
-
+func (g *ApiDataGetter) getAndStoreViewEvents(filename string, startTime time.Time) ([]*get_gdrive_views.GdriveViewEvent, error) {
 	fmt.Printf("Getting view events (startTime=%s)...\n", startTime.Format(time.RFC3339))
 	views, err := g.gDriveViewsGetter.GetGdriveDocViews(filename, &startTime)
 
