@@ -77,9 +77,9 @@ func printFolderTree(printer *ColumnPrinter, f *Folder, currentDepth int) {
 	viewCount := rightIndent(spaceForColumn, strconv.Itoa(f.viewCount))
 	uniqueViewCount := rightIndent(spaceForColumn, strconv.Itoa(f.uniqueViewcount))
 
-	printer.add(indent + f.docTitle + ",")
-	printer.add(viewCount + ",")
-	printer.add(uniqueViewCount + ",")
+	printer.add(indent + f.docTitle)
+	printer.add(viewCount)
+	printer.add(uniqueViewCount)
 
 	fmt.Println(printer.get())
 	printer.reset()
