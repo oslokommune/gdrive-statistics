@@ -83,6 +83,12 @@ func printData(files []*get_file_list.FileOrFolder, views []*get_gdrive_views.Gd
 	}
 
 	fmt.Printf("View count: %d\n", len(views))
+	fmt.Println(`This view count may not equal to the root folder's view acount below. This is because the total
+view count includes views for files that are hidden, i.e. not shared with other users (I think). More specifically,
+these are views that doesn't have a corresponding file, as the Gdrive file API doesn't return these hidden files,
+
+Also, if you show multiple levels in the folder tree below, you might wonder why the views of a folder doesn't equal
+the sum of views of its children. This is because the folder itself contains files that have views.`)
 }
 
 func min(a, b int) int {
